@@ -1,0 +1,99 @@
+name: multiomics
+channels:
+  - conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+dependencies:
+  # --- Python 核心 ---
+  - python=3.11
+  - numpy
+  - networkx
+  - umap-learn
+  - pip
+  # --- R 核心 ---
+  - r-base=4.5
+  - r-essentials
+  - r-tidyverse
+  - r-data.table
+  - r-ggplot2
+  - r-caret
+  - r-glmnet
+  - r-randomforest
+  - r-reshape2
+  - r-irkernel
+  # --- R 可视化 & 报告 ---
+  - r-rcolorbrewer
+  - r-viridislite
+  - r-ggiraph
+  - r-shiny
+  - r-ggpubr
+  - r-ggrepel
+  - r-patchwork
+  - r-gridextra
+  - r-scales
+  - r-survival
+  - r-knitr
+  - r-rmarkdown
+  - r-officer
+  - r-flextable
+  - r-openxlsx
+  - r-writexl
+  - r-readxl
+  - r-forestplot
+  - r-metafor
+  - r-meta
+  - r-remotes
+  - r-mass
+  - r-purrr
+  - r-stringr
+  - r-readr
+  - r-dplyr
+  - r-tibble
+  - r-tidyr
+  - r-compquadform
+  # --- 编译工具链（R 包源码编译必需）---
+  - compilers
+  - c-compiler
+  - cxx-compiler
+  - fortran-compiler
+  - gfortran_osx-arm64
+  - cmake
+  - pkg-config
+  # --- 系统库（R 包依赖）---
+  - libpng
+  - libxml2
+  - netcdf4
+  - imagemagick
+  - cairo
+  - pango
+  - harfbuzz
+  - freetype
+  - fontconfig
+  - expat
+  # --- Jupyter ---
+  - jupyterlab
+  - notebook
+  - ipykernel
+  # --- 系统工具 ---
+  - pandoc
+  - pip:
+      - adjusttext==1.3.0
+      - contourpy
+      - cycler
+      - et-xmlfile
+      - fonttools
+      - formulaic
+      - joblib
+      - kiwisolver
+      - lifelines==0.30.3
+      - matplotlib==3.10.8
+      - openpyxl==3.1.5
+      - pandas==2.3.3
+      - pillow
+      - scikit-learn==1.8.0
+      - scipy
+      - seaborn==0.13.2
+      - statsmodels==0.14.6
+      - xlsxwriter==3.2.9
