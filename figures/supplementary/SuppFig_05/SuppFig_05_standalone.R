@@ -4,7 +4,7 @@
 # Supplementary Figure 5: RBP Post-transcriptional Buffering +
 #                          Immune Checkpoint Landscape
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications - vector PDF + PNG/TIFF (600 DPI) composite
+# Target: EBioMedicine (Lancet family) - vector PDF + PNG/TIFF (600 DPI) composite
 # =============================================================================
 # 8 panels (four-row layout, 183x245mm canvas):
 #   A = RBP mRNA vs protein scatter (72 RBPs detected in both layers,

@@ -3,7 +3,7 @@
 # SuppFig_01_standalone.R
 # Complete, Self-Contained Code for Supplementary Figure 1
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications - vector PDF + PNG/TIFF (600 DPI) composite
+# Target: EBioMedicine (Lancet family) - vector PDF + PNG/TIFF (600 DPI) composite
 # =============================================================================
 # Supplementary Figure 1: QC - PCA & Sample Correlation
 # 7 panels:

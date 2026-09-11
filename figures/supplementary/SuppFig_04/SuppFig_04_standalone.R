@@ -4,7 +4,7 @@
 # Supplementary Figure 4: Immune Pathway NES Discordance + Hepatic Zonation
 #                          Collapse + CYP Enzyme Suppression
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications - vector PDF + PNG/TIFF (600 DPI) composite
+# Target: EBioMedicine (Lancet family) - vector PDF + PNG/TIFF (600 DPI) composite
 # =============================================================================
 # 6 panels (3-row layout, 183x245mm canvas):
 #   a = Immune Hallmark NES grouped bar (TC vs PR; 8 immune pathways) — 91x75
@@ -33,6 +33,7 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(stringr)
   library(patchwork)
+  library(grid)
   library(ggpubr)
   library(ggrepel)
   library(ggsci)

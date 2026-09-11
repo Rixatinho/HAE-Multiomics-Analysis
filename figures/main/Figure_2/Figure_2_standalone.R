@@ -3,7 +3,7 @@
 # Figure_2_standalone.R
 # Complete, Self-Contained Code for Figure 2
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Journal of Hepatology (Elsevier) - TIFF 600dpi (optimized assembly) + PDF
+# Target: EBioMedicine (Lancet family) - TIFF 600dpi (optimized assembly) + PDF
 # =============================================================================
 # Figure 2: Metabolic Reprogramming
 # 6 panels: A=metabolic bubble, B=enzyme heatmap, C=DEMs heatmap,
@@ -22,18 +22,16 @@ cat("  Loading libraries...\n")
 # =============================================================================
 suppressPackageStartupMessages({
   library(ggplot2)
-  library(patchwork)
   library(ComplexHeatmap)
   library(circlize)
   library(grid)
   library(dplyr)
   library(tidyr)
   library(stringr)
-  library(RColorBrewer)
   library(ggsci)
   library(ggrepel)
   library(igraph)
-  library(gridGraphics)
+  library(ggnewscale)
 })
 
 # --- Register Arial in R's PostScript/PDF font databases ---
@@ -57,13 +55,13 @@ OUT  <- file.path(BASE, "04_figures/main/Figure_2")
 dir.create(OUT, recursive = TRUE, showWarnings = FALSE)
 
 # =============================================================================
-# SECTION 3: Font & Dimension Constants (Nature Communications Standard)
+# SECTION 3: Font & Dimension Constants (EBioMedicine / Lancet family Standard)
 # =============================================================================
 FONT_FAMILY <- "Arial"      # AI native font - better than Arial for AI editing
 FONT_GRID   <- "Arial"      # unified for ComplexHeatmap
 MM_PER_INCH <- 25.4
 
-# NC page dimensions (mm)
+# EBioMedicine page dimensions (mm)
 W_SINGLE  <- 89
 W_DOUBLE  <- 183
 W_HALF    <- 89
@@ -122,7 +120,7 @@ col_zscore  <- colorRamp2(c(-2.5, 0, 2.5), c("#0073C2FF", "#FFFFFF", "#CD534CFF"
 col_immune  <- colorRamp2(c(-2, 0, 2),     c("#0073C2FF", "#FFFFFF", "#CD534CFF"))
 
 # =============================================================================
-# SECTION 6: ggplot2 Theme (theme_bw base, Nature Communications style)
+# SECTION 6: ggplot2 Theme (theme_bw base, EBioMedicine / Lancet family style)
 # =============================================================================
 # Expert review requirement: ALL text elements must explicitly set family = "Arial"
 theme_nc <- theme_bw(base_size = 8, base_family = FONT_FAMILY) +
@@ -1046,7 +1044,7 @@ tryCatch({
 
     # --- Panel labels (bold, FS_TAG pt) ---
     label_data <- data.frame(
-      text = c("a", "b", "c", "d", "e", "f"),
+      text = c("A", "B", "C", "D", "E", "F"),
       x_mm = c(1, 1, W_A + 1, W_B + 1, 1, W_E + 1),
       y_mm = c(H_TOTAL - 1, y_row1 - 1, H_TOTAL - 1, y_row1 - 1, H_R3 - 1, H_R3 - 1),
       stringsAsFactors = FALSE

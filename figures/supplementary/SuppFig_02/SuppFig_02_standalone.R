@@ -3,7 +3,7 @@
 # SuppFig_02_standalone.R
 # Supplementary Figure 2: Top DE Features + mRNA-Protein Discordance
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications - vector PDF + PNG/TIFF (600 DPI) composite
+# Target: EBioMedicine (Lancet family) - vector PDF + PNG/TIFF (600 DPI) composite
 # =============================================================================
 # 8 panels (3-row layout, 183x268mm):
 #   a = Volcano plot - Transcriptomics (DEGs, FC>log2(1.5), P<0.05)
@@ -31,10 +31,10 @@ suppressPackageStartupMessages({
   library(circlize)
   library(grid)
   library(dplyr)
-  library(patchwork)
+  library(tidyr)
   library(ggsci)
   library(ggpubr)
-  library(magick)
+  library(ggrepel)
 })
 
 pdfFonts(Arial = pdfFonts()$Helvetica)

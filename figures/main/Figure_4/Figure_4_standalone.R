@@ -3,7 +3,7 @@
 # Figure_4_standalone.R
 # Complete, Self-Contained Code for Figure 4
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Journal of Hepatology (Elsevier) - TIFF 600dpi (optimized assembly) + PDF
+# Target: EBioMedicine (Lancet family) - TIFF 600dpi (optimized assembly) + PDF
 # =============================================================================
 # Figure 4: Immune Microenvironment
 # 5 panels: ssGSEA heatmap + immune barplot + immune NES + checkpoint heatmap + immune-metab coupling
@@ -21,7 +21,6 @@ cat("  Loading libraries...\n")
 # =============================================================================
 suppressPackageStartupMessages({
   library(ggplot2)
-  library(patchwork)
   library(ComplexHeatmap)
   library(circlize)
   library(grid)
@@ -29,7 +28,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(stringr)
   library(ggpubr)
-  library(RColorBrewer)
   library(ggsci)
 })
 
@@ -54,13 +52,13 @@ OUT  <- file.path(BASE, "04_figures/main/Figure_4")
 dir.create(OUT, recursive = TRUE, showWarnings = FALSE)
 
 # =============================================================================
-# SECTION 3: Font & Dimension Constants (Nature Communications Standard)
+# SECTION 3: Font & Dimension Constants (EBioMedicine / Lancet family Standard)
 # =============================================================================
 FONT_FAMILY <- "Arial"      # AI native font - better than Arial for AI editing
 FONT_GRID   <- "Arial"      # unified for ComplexHeatmap
 MM_PER_INCH <- 25.4
 
-# NC page dimensions (mm)
+# EBioMedicine page dimensions (mm)
 W_SINGLE  <- 89
 W_DOUBLE  <- 183
 W_HALF    <- 89
@@ -119,7 +117,7 @@ col_zscore  <- colorRamp2(c(-2.5, 0, 2.5), c("#0073C2FF", "#FFFFFF", "#CD534CFF"
 col_immune  <- colorRamp2(c(-2, 0, 2),     c("#0073C2FF", "#FFFFFF", "#CD534CFF"))
 
 # =============================================================================
-# SECTION 6: ggplot2 Theme (theme_bw base, Nature Communications style)
+# SECTION 6: ggplot2 Theme (theme_bw base, EBioMedicine / Lancet family style)
 # =============================================================================
 # Expert review requirement: ALL text elements must explicitly set family = "Arial"
 theme_nc <- theme_bw(base_size = 8, base_family = FONT_FAMILY) +
@@ -729,7 +727,7 @@ tryCatch({
     column_title = "Immune-Metabolic Coupling",
     column_title_gp = gpar(fontsize = 10, fontface = "bold", fontfamily = FONT_GRID))
   dev.off()
-  cat("    -> saved (120x100mm)\n")
+  cat(sprintf("    -> saved (%.0fx%.0fmm)\n", s$width * 25.4, s$height * 25.4))
 }, error = function(e) cat("    ERROR:", e$message, "\n"))
 
 
@@ -816,7 +814,7 @@ tryCatch({
 
     # --- Panel labels (bold, FS_TAG pt) ---
     label_data <- data.frame(
-      text  = c("a", "b", "c", "d", "e"),
+      text  = c("A", "B", "C", "D", "E"),
       x_mm  = c(1, W_A + 1, 1, W_C + 1, 1),
       y_mm  = c(H_TOTAL - 1, H_TOTAL - 1, y_row1 - 1, y_row1 - 1, H3 - 1),
       stringsAsFactors = FALSE

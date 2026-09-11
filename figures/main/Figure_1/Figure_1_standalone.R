@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# Figure_1_standalone.R  
+# Figure_1_standalone.R  (v2 — Plan B Restructure)
 # Complete, Self-Contained Code for Figure 1
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications — Pure Vector PDF + PNG + TIFF
+# Target: EBioMedicine (Lancet family) — Pure Vector PDF + PNG + TIFF
 # =============================================================================
 # Figure 1 panels (6 total):
-#   a: Workflow diagram (externally produced)
+#   a: Workflow diagram (AI-generated, not coded here)
 #   b: Multi-omics differential overview (diverging bar chart)
 #   c: mRNA-Protein discordance scatter (log2FC concordance)
 #   d: Top integrated features heatmap (DEGs + DEPs, Z-scored)
@@ -17,7 +17,7 @@
 #   conda run -n multiomics Rscript Figure_1_standalone.R
 # =============================================================================
 
-cat("=== Figure 1: Multi-omics Molecular Landscape of HAE ===\n")
+cat("=== Figure 1: Multi-omics Molecular Landscape of HAE (v2) ===\n")
 cat("  Loading libraries...\n")
 
 # =============================================================================
@@ -55,7 +55,7 @@ dir.create(OUT, recursive = TRUE, showWarnings = FALSE)
 FONT_FAMILY <- "Arial"
 FONT_GRID   <- "Arial"
 DPI <- 600
-W_TOTAL <- 183  # NC full-width mm
+W_TOTAL <- 183  # EBioMedicine double-column width (mm)
 H_TOTAL <- 222  # Total height for b-f composite
 
 # Content-adaptive row heights (mm)
@@ -69,7 +69,7 @@ W_E <- 100; W_F <- W_TOTAL - W_E  # Row 3: 100 + 83
 
 mm2in <- function(mm) mm / 25.4
 
-# Typography (NC minimum 8pt)
+# Typography (EBioMedicine minimum 8pt)
 FS_TITLE    <- 10
 FS_SUBTITLE <- 9
 FS_AXIS_T   <- 9
@@ -80,26 +80,26 @@ FS_TAG      <- 14
 FS_GEOM     <- 2.85  # geom_text size (8.1pt)
 
 # =============================================================================
-# SECTION 4: Color Palette (Refined for NC)
+# SECTION 4: Color Palette (ggsci JCO — consistent with Figures 2-6)
 # =============================================================================
-# Primary palette
-COL_UP       <- "#C44E52"    # Warm red (upregulated)
-COL_DOWN     <- "#4C72B0"    # Steel blue (downregulated)
-COL_NS       <- "#CCCCCC"    # Light grey (not significant)
+# Primary palette (JCO: CD534C = red, 0073C2 = navy)
+COL_UP       <- "#CD534CFF"    # Warm red (upregulated)
+COL_DOWN     <- "#0073C2FF"    # Steel blue (downregulated)
+COL_NS       <- "#868686FF"    # Darker grey (not significant)
 COL_CONCORD  <- "#55A868"    # Sage green (concordant)
 COL_DISCORD  <- "#DD8452"    # Amber (discordant)
 
 # Omics layer accent colors
-COL_TC <- "#4C72B0"    # Transcriptomics (blue)
-COL_PR <- "#C44E52"    # Proteomics (red)
-COL_MT <- "#CCB974"    # Metabolomics (gold)
+COL_TC <- "#0073C2FF"    # Transcriptomics (navy)
+COL_PR <- "#CD534CFF"    # Proteomics (red)
+COL_MT <- "#EFC000FF"    # Metabolomics (gold)
 
 # Group colors
 COL_NORMAL   <- "#7AA6DCFF"
-COL_ADJACENT <- "#C44E52"
+COL_ADJACENT <- "#CD534CFF"
 
 # Diverging scale
-COL_DIVERGE <- c("#4C72B0", "#FFFFFF", "#C44E52")
+COL_DIVERGE <- c("#0073C2FF", "#FFFFFF", "#CD534CFF")
 
 # =============================================================================
 # SECTION 5: Theme
@@ -739,7 +739,7 @@ tryCatch({
 
     # --- Panel labels ---
     lbl <- data.frame(
-      t = c("b", "c", "d", "e", "f"),
+      t = c("B", "C", "D", "E", "F"),
       x = c(1, W_B + 1, 1, 1, W_E + 1),
       y = c(H_TOTAL - 1, H_TOTAL - 1, y_r1 - 1, H_R3 - 1, H_R3 - 1),
       stringsAsFactors = FALSE
@@ -776,4 +776,4 @@ tryCatch({
 
 }, error = function(e) cat("  ERROR Assembly:", e$message, "\n"))
 
-cat("\n=== Figure 1 complete ===\n")
+cat("\n=== Figure 1 (v2) complete ===\n")

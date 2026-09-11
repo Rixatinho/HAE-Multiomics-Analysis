@@ -2,7 +2,7 @@
 
 Source code accompanying the manuscript:
 
-> **A pharmacological dead zone underlies albendazole failure in hepatic alveolar echinococcosis**
+> **Peri-lesional loss of hepatic CYP3A4 may underlie subtherapeutic albendazole bioactivation in human alveolar echinococcosis**
 
 This repository contains the R analysis pipeline and figure-generation scripts used to produce all main and supplementary figures of the study. The pipeline integrates paired bulk transcriptomic, proteomic, and metabolomic data from 14 patients with hepatic alveolar echinococcosis (HAE), together with cell-type deconvolution, gene regulatory network inference, multi-omics integration, biomarker discovery, Mendelian randomisation, and quantitative pharmacological modelling.
 
@@ -25,8 +25,10 @@ HAE-Multiomics-Analysis/
 │   ├── 09_causal_network_medicine/ Random walk with restart, drug-target docking I/O
 │   └── utils/                      Themes, layouts, helper functions
 ├── figures/                        Per-figure standalone scripts
-│   ├── main/                       Figure_1_standalone.R … Figure_10_standalone.R
+│   ├── main/                       Figure_1_standalone.R … Figure_7_standalone.R
 │   └── supplementary/              SuppFig_01_standalone.R … SuppFig_15_standalone.R
+├── enhancements/                   v1.1.0 extension analyses (Supplementary
+│                                   Figures 16–27, Supplementary Tables 44–52)
 ├── environment.yml                 Conda environment specification
 ├── install_packages.R              Bioconductor / CRAN installer
 ├── LICENSE
@@ -84,13 +86,34 @@ Methods for the exact processing parameters.
 
 ---
 
+## Enhancement analyses (v1.1.0)
+
+The `enhancements/` directory contains the extension analyses added during
+revision, which produce Supplementary Figures 16–27 and Supplementary
+Tables 44–52:
+
+| Script | Output |
+|--------|--------|
+| `enhancement35_rifampicin_rescue.py` | Bayesian rifampicin-rescue simulation (Supp. Fig. 16–19, ST44–45) |
+| `enhancement36_mediation.py` | Patient-level paired-delta mediation analysis (Supp. Fig. 20) |
+| `enhancement37_lincs_cmap.R` / `enhancement37_lincs_cmap_enrichr.py` | LINCS L1000 / CMap drug-reversal scoring (ST46) |
+| `enhancement38_liver_atlas_deconv.py` / `enhancement39_cross_deconv.R` | Cross-atlas cell-type deconvolution (Supp. Fig. 22–23, ST47) |
+| `enhancement41_clinical_anchor.py` | Clinical-severity anchoring heatmap (Supp. Fig. 21, ST49) |
+| `enhancement42_dorothea_progeny.R` / `enhancement42b_progeny_isolated.R` | DoRothEA / PROGENy pathway activity (Supp. Fig. 24, ST48) |
+| `enhancement43_lincs_crosslib.py` | LINCS cross-library validation (ST50) |
+| `enhancement44_celltype_clinical.py` / `enhancement45_tf_clinical.py` / `enhancement46_ges_validation.py` | Cell-type / TF clinical correlations and GES validation |
+| `enhancement47_gtex_genomewide.py` | GTEx v10 genome-wide liver validation, 262 donors (Supp. Fig. 26, ST51) |
+| `enhancement48_pbpk_cyp3a4.R` | CYP3A4-mediated PBPK mechanistic model (Supp. Fig. 27, ST52) |
+
+---
+
 ## Data availability
 
 Raw sequencing reads, mass-spectrometry spectra, and clinical metadata are
 deposited in publicly accessible repositories (accession numbers are listed in
 the Data availability statement of the manuscript). The processed,
 de-identified data tables required to rerun every analysis script are provided
-as Supplementary Tables 1–41 alongside the published article.
+as Supplementary Tables 1–52 alongside the published article.
 
 ---
 

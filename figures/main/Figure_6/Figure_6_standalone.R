@@ -2,6 +2,7 @@
 # =============================================================================
 # Figure_6_standalone.R
 # Figure 6: Multi-omics Integration and Consensus Molecular Subtyping
+# Target: EBioMedicine (Lancet family)
 # =============================================================================
 # Panels:
 #   (A) DIABLO supervised integration - top feature loadings lollipop
@@ -32,8 +33,6 @@ suppressPackageStartupMessages({
   library(stringr)
   library(ggrepel)
   library(ggsci)
-  library(magick)
-  library(png)
 })
 
 pdfFonts(Arial = pdfFonts()$Helvetica)
@@ -671,7 +670,7 @@ tryCatch({
     list(x = W_F,  y = H1 + H2,  w = W_G,  h = H3,  obj = grob_g)
   )
 
-  tag_labels <- c("a", "b", "c", "d", "e", "f", "g")
+  tag_labels <- c("A", "B", "C", "D", "E", "F", "G")
   tag_x_mm <- c(1, W_A + 1, 1, W_A + 1, W_C + 1, 1, W_F + 1)
   tag_y_mm <- c(1, 1, H1 + 1, H_B + 1, H1 + 1, H1 + H2 + 1, H1 + H2 + 1)
 

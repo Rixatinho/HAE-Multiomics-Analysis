@@ -2,6 +2,7 @@
 # =============================================================================
 # SuppFig_12_standalone.R
 # Supplementary Figure 12: Extended Biomarker Validation & Paired-Difference Approach
+# HAE Multi-omics Study | Target: EBioMedicine (Lancet family)
 # =============================================================================
 # Panels (8):
 #   A = Cross-dataset direction consistency heatmap (top consensus DEGs)

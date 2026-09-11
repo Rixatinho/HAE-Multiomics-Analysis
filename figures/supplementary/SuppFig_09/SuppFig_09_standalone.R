@@ -2,10 +2,10 @@
 # SuppFig_09_standalone.R
 # Gene regulatory network, WGCNA, and extended deconvolution
 # analysis — 12 panels (a–l)
-# Target journal : Nature Communications  183 × 245 mm
+# Target journal : EBioMedicine (Lancet family)  183 × 245 mm
 # Run: conda run -n multiomics Rscript SuppFig_09_standalone.R
 # ============================================================
-FS_TAG <- 12   # panel count
+FS_TAG <- 12   # font size for panel tags
 
 suppressPackageStartupMessages({
   library(ggplot2)
@@ -47,10 +47,10 @@ PR_HUB_COLS <- c("blue"="#2196F3","brown"="#795548","green"="#4CAF50",
                  "turquoise"="#00BCD4","yellow"="#FFC107")
 
 # ── 基础主题 ───────────────────────────────────────────────────
-# macOS: "Helvetica" = system alias for Arial-equivalent vector font
-FONT <- "Helvetica"
+# macOS: "Arial" = TrueType font embedded by cairo_pdf
+FONT <- "Arial"
 
-theme_pub <- function(base_size = 8) {
+theme_nc <- function(base_size = 8) {
   theme_classic(base_size = base_size) %+replace% theme(
     text            = element_text(family = FONT),
     axis.text       = element_text(size = base_size, color = "black"),
@@ -288,7 +288,7 @@ p_b <- ggplot(evid_long, aes(x = evidence, y = pathway_short)) +
   scale_color_manual(values = c("TRUE" = COL_UP, "FALSE" = COL_DOWN),
                      guide = "none") +
   labs(x = NULL, y = NULL) +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(
     axis.text.x          = element_text(size = 7, angle = 45,
                                         hjust = 1, vjust = 1),
@@ -324,7 +324,7 @@ p_c <- ggplot(tc_hub, aes(x = abs_kME, y = abs_GS, color = module)) +
   labs(x = "Module membership (|kME|)",
        y = "Gene significance (|GS|)",
        title = "TC hub genes") +
-  theme_pub(8) +
+  theme_nc(8) +
   guides(color = guide_legend(override.aes = list(size = 2)))
 
 save_panel(p_c, "Supp09c_TC_hub_scatter.pdf", 61, 65)
@@ -350,7 +350,7 @@ p_d <- ggplot(pr_hub, aes(x = abs_kME, y = abs_GS, color = module)) +
   labs(x = "Module membership (|kME|)",
        y = "Gene significance (|GS|)",
        title = "PR hub genes") +
-  theme_pub(8) +
+  theme_nc(8) +
   guides(color = guide_legend(override.aes = list(size = 2)))
 
 save_panel(p_d, "Supp09d_PR_hub_scatter.pdf", 61, 60)
@@ -495,7 +495,7 @@ p_h <- ggplot(tf_long, aes(x = Condition, y = TF, fill = Degree)) +
                                              barwidth  = unit(2,"mm"))) +
   labs(x = NULL, y = NULL,
        title = "TF regulatory degree") +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(
     axis.text.x  = element_text(angle = 30, hjust = 1, size = 7.5),
     axis.text.y  = element_text(size = 6.5, face = "italic"),
@@ -536,7 +536,7 @@ p_i <- ggplot(top_tf_diff, aes(x = Diff, y = TF, fill = Direction)) +
   ) +
   scale_x_continuous(expand = expansion(mult = c(0.3, 0.3))) +
   labs(x = "Regulatory degree change (Adjacent \u2212 Normal)", y = NULL) +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(
     axis.text.y     = element_blank(),
     axis.ticks.y    = element_blank(),
@@ -592,7 +592,7 @@ p_j <- ggplot(cc_long,
   scale_x_discrete(expand = expansion(add = c(1.5, 0.3))) +
   labs(x = NULL, y = "Mean communication score",
        title = "Cell communication by pathway") +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(legend.position    = "bottom",
         legend.key.size    = unit(3, "mm"),
         axis.text.x        = element_text(size = 8, face = "bold"))
@@ -631,7 +631,7 @@ p_k <- ggplot(dv, aes(x = correlation, y = lab_pair,
   scale_x_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
   labs(x = "Pearson correlation", y = NULL,
        title = "Deconvolution validation") +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(
     axis.text.y   = element_text(size = 6),
     legend.position = c(0.82, 0.18),
@@ -672,7 +672,7 @@ p_l <- ggplot(df_l, aes(x = Myog, y = Stellate, color = Group)) +
   labs(x = "Myogenesis score (GSVA)",
        y = "Stellate cell proportion",
        title = "Stellate cell vs Myogenesis") +
-  theme_pub(8) +
+  theme_nc(8) +
   theme(legend.position = c(0.82, 0.15))
 
 save_panel(p_l, "Supp09l_stellate_myogenesis_scatter.pdf", 61, 60)
@@ -787,12 +787,12 @@ render_composite <- function() {
   message("  SuppFig_09.pdf saved (pure vector).")
 }
 
-# ── PNG — 300 DPI preview (write to /tmp first, then copy to avoid iCloud write error) ──
+# ── PNG — 600 DPI preview (write to /tmp first, then copy to avoid iCloud write error) ──
 {
-  px_W    <- round(W_mm * 300 / 25.4)
-  px_H    <- round(H_mm * 300 / 25.4)
+  px_W    <- round(W_mm * 600 / 25.4)
+  px_H    <- round(H_mm * 600 / 25.4)
   tmp_png <- file.path(tempdir(), "SuppFig_09_tmp.png")
-  grDevices::png(tmp_png, width = px_W, height = px_H, res = 300, type = "cairo")
+  grDevices::png(tmp_png, width = px_W, height = px_H, res = 600, type = "cairo")
   render_composite()
   dev.off()
   file.copy(tmp_png, file.path(OUT, "SuppFig_09.png"), overwrite = TRUE)

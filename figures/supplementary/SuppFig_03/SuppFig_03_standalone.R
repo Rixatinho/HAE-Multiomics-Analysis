@@ -3,7 +3,7 @@
 # SuppFig_03_standalone.R  (v2: pixel-exact + magick canvas composite)
 # Supplementary Figure 3: Pathway Enrichment + Reactome Validation
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications - vector PDF + PNG/TIFF (600 DPI) composite
+# Target: EBioMedicine (Lancet family) - vector PDF + PNG/TIFF (600 DPI) composite
 # =============================================================================
 # Final 8-panel layout (4 rows x 2 cols, 183x245mm canvas):
 #   Row1 (60mm):  a = TC Hallmark GSEA dotplot       | b = PR Hallmark GSEA dotplot
@@ -14,7 +14,7 @@
 # Usage: conda run -n multiomics Rscript SuppFig_03_standalone.R
 # =============================================================================
 
-cat("=== Supplementary Figure 3: Pathway Enrichment ===\n")
+cat("=== Supplementary Figure 3: Pathway Enrichment (v2) ===\n")
 cat("  Loading libraries...\n")
 
 # =============================================================================
@@ -511,14 +511,15 @@ dev.off()
 
 # PNG (raster preview, 600 DPI)
 grDevices::png(file.path(OUT, "SuppFig_03.png"),
-               width = W_TOTAL, height = H_TOTAL, units = "mm", res = ASSEMBLY_DPI)
+               width = W_TOTAL, height = H_TOTAL, units = "mm", res = ASSEMBLY_DPI,
+               type = "cairo")
 render_vector_composite()
 dev.off()
 
-# TIFF (600 DPI submission copy)
+# TIFF (600 DPI submission copy, LZW + Cairo for compact output)
 grDevices::tiff(file.path(OUT, "SuppFig_03.tiff"),
                 width = W_TOTAL, height = H_TOTAL, units = "mm", res = ASSEMBLY_DPI,
-                compression = "lzw")
+                compression = "lzw", type = "cairo")
 render_vector_composite()
 dev.off()
 

@@ -2,6 +2,7 @@
 # =============================================================================
 # SuppFig_13_standalone.R
 # Supplementary Figure 13: Machine Learning Classification & Diagnostic Nomogram
+# HAE Multi-omics Study | Target: EBioMedicine (Lancet family)
 # =============================================================================
 # Panels (8):
 #   a = Classification metrics (Sens/Spec/PPV/NPV) per ML model (CS1 vs CS2)
@@ -29,7 +30,6 @@ suppressPackageStartupMessages({
   library(patchwork)
   library(ggsci)
   library(jsonlite)
-  library(magick)
   library(AnnotationDbi)
   library(org.Hs.eg.db)
 })

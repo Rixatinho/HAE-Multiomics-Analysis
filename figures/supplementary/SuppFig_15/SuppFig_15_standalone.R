@@ -3,7 +3,7 @@
 # SuppFig_15_standalone.R
 # Supplementary Figure 15: MR Sensitivity, Drug Repurposing & Pan-liver Comparison
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications
+# Target: EBioMedicine (Lancet family)
 # =============================================================================
 # 8 Panels:
 #   A = MR multi-method evidence matrix (inference strength + n_methods + pleiotropy)

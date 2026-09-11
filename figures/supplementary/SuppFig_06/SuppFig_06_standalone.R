@@ -3,7 +3,7 @@
 # SuppFig_06_standalone.R — Deep Optimization v2
 # Supplementary Figure 6: Cross-Disease Hallmark Benchmarking & Molecular Positioning
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications | 183x245mm | 600DPI | Zero-Distortion Assembly
+# Target: EBioMedicine (Lancet family) | 183x245mm | 600DPI | Zero-Distortion Assembly
 # =============================================================================
 # Panels:
 #   a = Cross-disease hallmark radar chart (10 hallmarks x 4 diseases)
@@ -33,7 +33,6 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(tidyr)
   library(stringr)
-  library(magick)
   library(ggsci)
   library(ggrepel)
   library(jsonlite)

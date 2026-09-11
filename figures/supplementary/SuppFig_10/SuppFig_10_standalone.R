@@ -2,7 +2,7 @@
 # =============================================================================
 # SuppFig_10_standalone.R
 # Supplementary Figure 10: ULM TF Activity Inference + L-R Interaction Network
-# HAE Multi-omics Study | Journal of Hepatology
+# HAE Multi-omics Study | EBioMedicine (Lancet family)
 # =============================================================================
 # Panels (A-J):
 #   A = ULM TF activity waterfall (all 24 TFs, FDR threshold)
@@ -65,7 +65,7 @@ COL_OTHER   <- "#999999"
 # =============================================================================
 # Theme
 # =============================================================================
-theme_pub <- function(base_sz = 8) {
+theme_nc <- function(base_sz = 8) {
   theme_bw(base_size = base_sz, base_family = FONT) %+replace%
     theme(
       panel.grid       = element_blank(),
@@ -81,7 +81,7 @@ theme_pub <- function(base_sz = 8) {
       plot.margin      = margin(4, 4, 4, 4, "mm")
     )
 }
-theme_set(theme_pub())
+theme_set(theme_nc())
 ht_opt$message <- FALSE
 
 # =============================================================================
@@ -152,7 +152,7 @@ p_a <- ggplot(tf_a, aes(x = TF, y = z_score, fill = sig)) +
                     name = NULL) +
   coord_flip() +
   labs(x = NULL, y = "ULM z-score", title = "TF Activity (DoRothEA/ULM)") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(face = "italic", size = 5.5),
         legend.position = c(0.22, 0.88),
         legend.key.size = unit(2, "mm"))
@@ -185,7 +185,7 @@ p_b <- ggplot(tf_b) +
                      name = NULL) +
   coord_flip() +
   labs(x = NULL, y = "Score", title = "TF Regulatory Circuit Activity") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(face = "italic", size = 6.5),
         legend.position = c(0.22, 0.88),
         legend.key.size = unit(2, "mm"))
@@ -221,7 +221,7 @@ p_c <- ggplot(tf_c, aes(x = z_score, y = mean_logFC)) +
                      name = "Category") +
   labs(x = "ULM Activity z-score", y = "Mean Target logFC",
        title = "TF Activity vs Target Expression") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(legend.position = c(0.82, 0.2),
         legend.key.size = unit(2, "mm"))
 save_panel(p_c, "Supp10c_TF_vs_protein.pdf", 84, 66)
@@ -334,7 +334,7 @@ p_e <- ggplot(e_data, aes(x = logFC, y = gene_name, fill = TF)) +
   scale_fill_manual(values = c("HNF1A" = "#4393C3", "HNF4A" = "#D6604D"), name = "Regulon") +
   labs(x = "log\u2082FC (Adjacent / Normal)", y = NULL,
        title = "HNF4A/HNF1A Target Gene Expression") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(face = "italic", size = 5),
         legend.position = c(0.85, 0.15),
         legend.key.size = unit(2, "mm"))
@@ -367,7 +367,7 @@ p_f <- ggplot(tf_f, aes(x = TF, y = z_score)) +
   coord_flip() +
   labs(x = NULL, y = "ULM z-score",
        title = "TF activity by functional category") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(legend.position = "none",
         strip.text.y.right = element_text(size = 6, angle = 0, face = "bold"),
         strip.background = element_rect(fill = "grey95", color = NA),
@@ -399,7 +399,7 @@ p_g <- ggplot(pw_g, aes(x = mean_LR_score, y = pathway)) +
   scale_color_manual(values = c("Enhanced" = COL_UP, "Reduced" = COL_DOWN), name = "Direction") +
   labs(x = "Mean L-R Communication Score", y = NULL,
        title = "Pathway-Level L-R Signalling") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(size = 6),
         legend.position = c(0.18, 0.82),
         legend.key.size = unit(2, "mm"),
@@ -432,7 +432,7 @@ p_h <- ggplot(lr_h, aes(x = pair_name, y = LR_score_RNA)) +
   coord_flip() +
   labs(x = NULL, y = "L-R Score (RNA)",
        title = "Top 20 L-R Pairs by Effect Size") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(size = 5.5),
         legend.position = c(0.82, 0.12),
         legend.key.size = unit(2, "mm"))
@@ -534,7 +534,7 @@ p_j <- ggplot(long_j, aes(x = Pathway, y = Count, fill = Category)) +
   coord_flip() +
   labs(x = NULL, y = "Number of L-R Pairs (Enhanced \u2192 | \u2190 Reduced)",
        title = "L-R Direction by Pathway") +
-  theme_pub(7) +
+  theme_nc(7) +
   theme(axis.text.y = element_text(size = 5.5),
         legend.position = c(0.85, 0.12),
         legend.key.size = unit(2, "mm"))

@@ -3,7 +3,7 @@
 # SuppFig_14_standalone.R
 # Supplementary Figure 14: Molecular Docking & Pharmacogenomic Validation
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Nature Communications
+# Target: EBioMedicine (Lancet family)
 # =============================================================================
 # 8 Panels:
 #   A = Binding affinity comparison (barplot, |DeltaG| with signed labels)

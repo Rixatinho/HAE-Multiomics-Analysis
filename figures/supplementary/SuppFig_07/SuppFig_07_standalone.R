@@ -3,6 +3,7 @@
 # SuppFig_07_standalone.R
 # Supplementary Figure 7: HAE-Distinctive Pathway Signatures
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
+# Target: EBioMedicine (Lancet family)
 # =============================================================================
 # Panels:
 #   A = HAE-distinctive pathway lollipop (8 pathways with opposite direction)
@@ -22,6 +23,7 @@ suppressPackageStartupMessages({
   library(ComplexHeatmap)
   library(circlize)
   library(grid)
+  library(scales)
 })
 
 pdfFonts(Arial = pdfFonts()$Helvetica)

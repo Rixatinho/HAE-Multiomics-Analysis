@@ -2,6 +2,7 @@
 # =============================================================================
 # SuppFig_11_standalone.R
 # Supplementary Figure 11: Extended Molecular Subtyping and Network Validation
+# HAE Multi-omics Study | Target: EBioMedicine (Lancet family)
 # =============================================================================
 # Panels (8):
 #   A = Internal cluster validation indices (CH/DB/Dunn/Silhouette, all vote K=2)

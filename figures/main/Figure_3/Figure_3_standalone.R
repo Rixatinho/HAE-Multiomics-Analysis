@@ -3,7 +3,7 @@
 # Figure_3_standalone.R
 # Complete, Self-Contained Code for Figure 3
 # HAE (Hepatic Alveolar Echinococcosis) Multi-omics Study
-# Target: Journal of Hepatology (Elsevier) - TIFF 600dpi + PDF
+# Target: EBioMedicine (Lancet family) - TIFF 600dpi + PDF
 # =============================================================================
 # Figure 3: Tryptophan-Kynurenine Pathway Dysregulation and NAD+ Depletion
 # 6 panels: A=enzyme heatmap, B=IDO1 cross-disease, C=metabolite barplot,
@@ -22,14 +22,12 @@ cat("  Loading libraries...\n")
 # =============================================================================
 suppressPackageStartupMessages({
   library(ggplot2)
-  library(patchwork)
   library(ComplexHeatmap)
   library(circlize)
   library(grid)
   library(dplyr)
   library(tidyr)
   library(stringr)
-  library(RColorBrewer)
   library(ggsci)
   library(ggrepel)
   library(ggpubr)
@@ -57,7 +55,7 @@ FONT_FAMILY <- "Arial"
 FONT_GRID   <- "Arial"
 MM_PER_INCH <- 25.4
 
-# NC page dimensions (mm)
+# EBioMedicine page dimensions (mm)
 W_SINGLE  <- 89
 W_DOUBLE  <- 183
 W_HALF    <- 89
@@ -785,7 +783,7 @@ tryCatch({
 
     # --- Panel labels (bold, FS_TAG pt) ---
     label_data <- data.frame(
-      text  = c("a", "b", "c", "d", "e", "f"),
+      text  = c("A", "B", "C", "D", "E", "F"),
       x_mm  = c(1, W_A + 1, 1, W_C + 1, 1, W_E + 1),
       y_mm  = c(H_TOTAL - 1, H_TOTAL - 1, y_row1 - 1, y_row1 - 1, H3 - 1, H3 - 1),
       stringsAsFactors = FALSE

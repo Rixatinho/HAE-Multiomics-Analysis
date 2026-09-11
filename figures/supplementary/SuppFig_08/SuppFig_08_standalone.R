@@ -3,7 +3,7 @@
 # SuppFig_08_standalone.R  (v2 zero-distortion polish: 2026-05-21)
 # Supplementary Figure 8: Regulatory architecture, ligand–receptor crosstalk,
 #   and deconvolution validation supporting Fig. 5
-# HAE Multi-omics Study | Nature Communications
+# HAE Multi-omics Study | EBioMedicine (Lancet family)
 # =============================================================================
 # Polish v2 fixes:
 #   - Panel A: cluster_rows=FALSE (no dendrogram); M0-M13 ordered numerically;
@@ -27,7 +27,7 @@
 # Usage: conda run -n multiomics Rscript SuppFig_08_standalone.R
 # =============================================================================
 
-cat("=== Supplementary Figure 8: Regulatory architecture & deconvolution validation ===\n")
+cat("=== Supplementary Figure 8: Regulatory architecture & deconvolution validation (v2) ===\n")
 
 suppressPackageStartupMessages({
   library(ggplot2)
