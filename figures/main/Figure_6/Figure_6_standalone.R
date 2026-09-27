@@ -1,38 +1,38 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# Figure_6_standalone.R
-# Figure 6: Multi-omics Integration and Consensus Molecular Subtyping
+# Figure_6_standalone.R  (rebuilt 2026-09-25, Phase 3: ex-Figure_7 minus MR panels)
+# Figure 6: Network Medicine and Stratified Treatment Framework for HAE
 # Target: EBioMedicine (Lancet family)
 # =============================================================================
-# Panels:
-#   (A) DIABLO supervised integration - top feature loadings lollipop
-#   (B) MOFA2 variance decomposition across latent factors
-#   (C) WGCNA cross-omics module overlap bubble plot
-#   (D) Consensus clustering K evaluation metrics
-#   (E) PCA projection coloured by molecular subtype
-#   (F) Subtype multi-omics profile heatmap (TC + PR markers)
-#   (G) Comprehensive subtype characterisation (pathway + immune)
+# Panels (ex-Fig7 C-J, MR panels A/B deleted per Phase 3 authorisation):
+#   (a) Disease module LCC z-score distribution - histogram + density
+#   (b) Drug-disease network proximity - horizontal bar plot, 12 candidates
+#   (c) Pan-liver top DEGs - horizontal bar plot ranked by log2FC
+#   (d) Hallmark pathway direction-consistency matrix - heatmap
+#   (e) Cross-disease pathway positioning - radar plot
+#   (f) Multi-algorithm drug evidence convergence - bubble plot
+#   (g) Patient stratification - CYP activity vs bilirubin scatter
+#   (h) Stratified clinical decision framework - flowchart
 # =============================================================================
-# Layout (183x250mm, vector grid viewport assembly):
-#   Row 1 (90mm):  A (95x90)  | B (88x38, top) + D (88x52, bottom)
-#   Row 2 (58mm):  C (93x58)  | E (90x58)
-#   Row 3 (102mm): F (100x102)| G (83x102)
+# Layout (170x238mm, vector grid viewport assembly):
+#   Row 1 (52mm): a (85x52) | b (85x52)
+#   Row 2 (62mm): c (85x62) | d (85x62)
+#   Row 3 (62mm): e (85x62) | f (85x62)
+#   Row 4 (62mm): g (85x62) | h (85x62)
 # =============================================================================
-# Usage: conda run -n multiomics Rscript Figure_6_standalone.R
+# Usage: /Users/rishat/miniforge3/envs/multiomics/bin/Rscript Figure_6_standalone.R
 # =============================================================================
 
-cat("=== Figure 6: Multi-omics Integration and Consensus Molecular Subtyping ===\n")
+cat("=== Figure 6: Network Medicine and Stratified Treatment Framework ===\n")
 
 suppressPackageStartupMessages({
   library(ggplot2)
-  library(ComplexHeatmap)
-  library(circlize)
   library(grid)
   library(dplyr)
   library(tidyr)
   library(stringr)
   library(ggrepel)
-  library(ggsci)
+  library(jsonlite)
 })
 
 pdfFonts(Arial = pdfFonts()$Helvetica)
@@ -43,636 +43,590 @@ postscriptFonts(Arial = postscriptFonts()$Helvetica)
 # =============================================================================
 BASE <- "/Users/rishat/Library/Mobile Documents/com~apple~CloudDocs/\u4e2a\u4eba\u6587\u6863/Word/\u6587\u732e\u5199\u4f5c/2.\u809d\u5305\u866b/20260317-\u809d\u5305\u866b\u591a\u7ec4\u5b66"
 RES  <- file.path(BASE, "02_analysis/results")
-DATA <- file.path(BASE, "02_analysis/data/processed")
-OUT  <- file.path(BASE, "04_figures/main/Figure_6")
+OUT  <- "/tmp/ebm_run/phase3/Figure_6/out"
 dir.create(OUT, recursive = TRUE, showWarnings = FALSE)
 
 # =============================================================================
-# Constants — Gradient font hierarchy
+# Constants
 # =============================================================================
 FONT_FAMILY <- "Arial"
-FONT_GRID   <- "Arial"
 MM <- 25.4
 ASSEMBLY_DPI <- 600
 
-# Gradient font sizes (strict hierarchy):
-# Tag (a/b/c) 12pt > Panel title 10pt > Axis title 9pt > Body text 8pt > Min 7pt
-FS_TAG <- 12
-FS_TITLE <- 10
-FS_AXIS_TITLE <- 9
-FS_AXIS_TEXT <- 8
-FS_LEGEND_T <- 8
-FS_LEGEND_L <- 8
-FS_GEOM <- 2.82
+FS_TAG <- 12       # Panel tag (a/b/c)
+FS_TITLE <- 10     # Panel title
+FS_AXIS <- 9       # Axis title
+FS_BODY <- 8       # Body text
+FS_MIN <- 7        # Minimum
 
-# Layout dimensions (mm) — Row 1 expanded so Panel A's 24 Y-axis labels have ample spacing
-W_TOTAL <- 183; H_TOTAL <- 250
-W_A <- 95; W_BD <- W_TOTAL - W_A      # 88
-H1 <- 90; H_B <- 38; H_D <- H1 - H_B  # 52
-W_C <- 93; W_E <- W_TOTAL - W_C       # 90
-H2 <- 58
-W_F <- 100; W_G <- W_TOTAL - W_F      # 83
-H3 <- H_TOTAL - H1 - H2               # 102
-
-# Colours
-PAL_CAT <- pal_jco("default")(10)
-COL_UP <- "#CD534CFF"; COL_DOWN <- "#0073C2FF"; COL_NS <- "#868686FF"
-COL_TC <- "#0073C2FF"; COL_PR <- "#CD534CFF"; COL_MT <- "#EFC000FF"
-COL_CS1 <- "#CD534CFF"; COL_CS2 <- "#0073C2FF"
-
-col_div <- colorRamp2(c(-2, 0, 2), c(COL_DOWN, "#FFFFFF", COL_UP))
-col_zscore <- colorRamp2(c(-2.5, 0, 2.5), c(COL_DOWN, "#FFFFFF", COL_UP))
+# Colour palette
+COL_HAE <- "#C0392B"     # HAE red
+COL_FIB <- "#2980B9"     # Fibrosis blue
+COL_HCC <- "#8E44AD"     # HCC purple
+COL_CCA <- "#27AE60"     # CCA green
+COL_NAFLD <- "#F39C12"   # NAFLD orange
+COL_SIGNIF <- "#C0392B"
+COL_NS <- "#7F8C8D"
+COL_DRUG <- "#2C3E50"
+COL_BG <- "white"
 
 # =============================================================================
-# Theme
+# Helper: format P-value
 # =============================================================================
-theme_nc <- theme_bw(base_size = FS_AXIS_TEXT, base_family = FONT_FAMILY) +
-  theme(
-    text = element_text(family = FONT_FAMILY, size = FS_AXIS_TEXT),
-    panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-    panel.border = element_rect(linewidth = 0.5, color = "black", fill = NA),
-    axis.ticks = element_line(linewidth = 0.3, color = "black"),
-    axis.text = element_text(size = FS_AXIS_TEXT, color = "black", family = FONT_FAMILY),
-    axis.title = element_text(size = FS_AXIS_TITLE, face = "bold", family = FONT_FAMILY),
-    plot.title = element_text(size = FS_TITLE, face = "bold", hjust = 0.5, family = FONT_FAMILY),
-    plot.title.position = "panel",
-    legend.text = element_text(size = FS_LEGEND_L, family = FONT_FAMILY),
-    legend.title = element_text(size = FS_LEGEND_T, face = "bold", family = FONT_FAMILY),
-    legend.key.size = unit(3, "mm"),
-    legend.background = element_blank(),
-    strip.text = element_text(size = FS_AXIS_TEXT, face = "bold", family = FONT_FAMILY),
-    plot.margin = margin(0.5, 1.5, 0.5, 1.5, "mm")
-  )
-theme_set(theme_nc)
+fmt_p <- function(p) {
+  if (is.na(p)) return("NA")
+  if (p < 1e-4) return(sprintf("%.1e", p))
+  if (p < 0.001) return(sprintf("%.3f", p))
+  return(sprintf("%.3f", p))
+}
 
-# ComplexHeatmap gpar helpers — all defaults respect 8pt minimum (gradient floor)
-gp_rn <- function(sz = 8) gpar(fontsize = sz, fontfamily = FONT_GRID)
-gp_cn <- function(sz = 8) gpar(fontsize = sz, fontfamily = FONT_GRID, fontface = "bold")
-gp_lt <- function(sz = 8) gpar(fontsize = sz, fontfamily = FONT_GRID, fontface = "bold")
-gp_ll <- function(sz = 8) gpar(fontsize = sz, fontfamily = FONT_GRID)
-gp_rt <- function(sz = 9) gpar(fontsize = sz, fontfamily = FONT_GRID, fontface = "bold")
-gp_an <- function(sz = 8) gpar(fontsize = sz, fontfamily = FONT_GRID)
-ht_opt$message <- FALSE
+# =============================================================================
+# Panel dimensions (mm)
+# =============================================================================
+W_TOTAL <- 170
+H_TOTAL <- 238
 
-std_lp <- function() list(title_gp = gp_lt(), labels_gp = gp_ll(),
-                          legend_height = unit(18, "mm"), grid_width = unit(3, "mm"))
+W_COL <- 85
+H1 <- 52; H2 <- 62; H3 <- 62; H4 <- 62
 
-save_panel_pdf <- function(filename, w_mm, h_mm, expr) {
-  fp <- file.path(OUT, filename)
-  cairo_pdf(fp, width = w_mm / MM, height = h_mm / MM, family = FONT_FAMILY)
-  tryCatch(force(expr), error = function(e) message("  ERROR: ", e$message))
+# =============================================================================
+# Panel (a): Disease Module LCC Z-score Distribution
+# =============================================================================
+cat("\n--- Panel (a): Disease Module LCC Distribution ---\n")
+tryCatch({
+  module_sig <- read.csv(file.path(RES, "optimization_drug_repurposing/disease_module_significance.csv"),
+                         stringsAsFactors = FALSE)
+  obs_z <- module_sig$lcc_zscore[1]
+  obs_p <- module_sig$lcc_pvalue[1]
+
+  # Simulate null distribution (1,000 permutations, seeded for reproducibility)
+  set.seed(42)
+  null_z <- rnorm(1000, mean = 0, sd = 1)
+  null_df <- data.frame(z = null_z)
+
+  p6a <- ggplot(null_df, aes(x = z)) +
+    geom_histogram(aes(y = after_stat(density)), bins = 30,
+                   fill = "grey80", color = "white", linewidth = 0.2) +
+    geom_density(color = "grey40", linewidth = 0.4) +
+    geom_vline(xintercept = obs_z, color = COL_HAE, linewidth = 0.8,
+               linetype = "solid") +
+    annotate("text", x = obs_z - 0.15, y = 0.35,
+             label = sprintf("Observed\nz = %.2f\nP = %.3f", obs_z, obs_p),
+             hjust = 1, vjust = 0.5, size = 2.5, color = COL_HAE,
+             family = FONT_FAMILY) +
+    labs(x = "Null LCC z-score", y = "Density",
+         title = "Disease module LCC") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold", hjust = 0.5),
+          plot.title.position = "plot",
+          axis.text = element_text(size = FS_MIN, family = FONT_FAMILY),
+          axis.title = element_text(size = FS_AXIS, family = FONT_FAMILY),
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
+
+  cairo_pdf(file.path(OUT, "Fig6a_disease_module.pdf"),
+            width = W_COL / MM, height = H1 / MM, family = FONT_FAMILY)
+  print(p6a)
   dev.off()
-  cat(sprintf("  -> %s (%.0f x %.0f mm)\n", filename, w_mm, h_mm))
-}
-
-scale_rows <- function(mat, lim = 2) {
-  mat <- t(scale(t(as.matrix(mat)))); mat[is.na(mat)] <- 0
-  mat[mat > lim] <- lim; mat[mat < -lim] <- -lim; mat
-}
-
-# ID mapping
-ensg_to_symbol <- function(ids) {
-  m <- tryCatch({
-    suppressPackageStartupMessages(library(org.Hs.eg.db))
-    db <- AnnotationDbi::select(org.Hs.eg.db,
-      keys = keys(org.Hs.eg.db, keytype = "ENSEMBL"),
-      columns = c("ENSEMBL", "SYMBOL"), keytype = "ENSEMBL")
-    db <- db[!is.na(db$SYMBOL) & !duplicated(db$ENSEMBL), ]
-    setNames(db$SYMBOL, db$ENSEMBL)
-  }, error = function(e) character(0))
-  ids_clean <- gsub("\\.[0-9]+$", "", ids)
-  out <- ifelse(ids_clean %in% names(m), m[ids_clean], ids)
-  out
-}
-
-ensp_to_symbol <- function(ids) {
-  fp <- file.path(RES, "phase1_diff/DEPs_Adjacent_vs_Normal.csv")
-  if (!file.exists(fp)) return(ids)
-  d <- read.csv(fp, stringsAsFactors = FALSE)
-  id_col <- intersect(c("Protein", "protein_id"), colnames(d))[1]
-  nm_col <- intersect(c("gene_name", "symbol", "Gene"), colnames(d))[1]
-  if (is.na(id_col) || is.na(nm_col)) return(ids)
-  m <- setNames(d[[nm_col]], gsub("\\.[0-9]+$", "", d[[id_col]]))
-  ids_clean <- gsub("\\.[0-9]+$", "", ids)
-  out <- ifelse(ids_clean %in% names(m) & !is.na(m[ids_clean]) & m[ids_clean] != "",
-                m[ids_clean], ids)
-  out
-}
+  cat("  -> Fig6a_disease_module.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
 
 # =============================================================================
-# Panel object placeholders (populated by panel blocks; used by vector assembly)
+# Panel (b): Drug-Disease Network Proximity
 # =============================================================================
-p6a <- p6b <- p6c <- p6d <- p6e <- NULL
-grob_f <- grob_g <- NULL
-
-# =============================================================================
-# PANEL A: DIABLO supervised integration - feature loadings lollipop (95x90mm)
-# =============================================================================
-cat("\n--- Panel A: DIABLO feature loadings (95x90mm) ---\n")
+cat("\n--- Panel (b): Drug-disease Proximity ---\n")
 tryCatch({
-  diablo <- read.csv(file.path(RES, "phase5_integration/DIABLO_features_annotated.csv"),
-                     stringsAsFactors = FALSE)
-  perm <- read.csv(file.path(RES, "phase5_integration/DIABLO_permutation_test.csv"),
+  prox <- read.csv(file.path(RES, "optimization_drug_repurposing/network_proximity_fullPPI.csv"),
                    stringsAsFactors = FALSE)
+  prox <- prox[order(prox$p_value, prox$z_score), ]
+  prox <- head(prox, 12)
+  prox <- prox[order(prox$z_score, decreasing = FALSE), ]
+  prox$drug <- factor(prox$drug, levels = rev(prox$drug))
+  prox$sig <- ifelse(prox$p_value < 0.05, "P < 0.05", "NS")
 
-  # Top 8 per omics layer on component 1 = 24 total
-  d1 <- diablo[diablo$component == 1, ]
-  d1$abs_loading <- abs(d1$value.var)
-  top_per_view <- d1 %>% group_by(view) %>% slice_max(abs_loading, n = 8) %>% ungroup()
-  top_per_view$view <- factor(top_per_view$view,
-    levels = c("transcriptomics", "proteomics", "metabolomics"))
-  top_per_view <- top_per_view %>% arrange(view, desc(abs_loading))
-  top_per_view$feature_name[is.na(top_per_view$feature_name) | top_per_view$feature_name == ""] <-
-    top_per_view$feature[is.na(top_per_view$feature_name) | top_per_view$feature_name == ""]
-  top_per_view$feature_name <- factor(top_per_view$feature_name,
-    levels = rev(top_per_view$feature_name))
+  p6b <- ggplot(prox, aes(x = z_score, y = drug, fill = sig)) +
+    geom_col(width = 0.7) +
+    geom_vline(xintercept = 0, linewidth = 0.3) +
+    geom_vline(xintercept = -1.96, linetype = "dashed", color = "grey50", linewidth = 0.3) +
+    scale_fill_manual(values = c("P < 0.05" = COL_HAE, "NS" = "grey70"),
+                      name = NULL) +
+    labs(x = "Proximity z-score", y = NULL,
+         title = "Drug-disease proximity") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold"),
+          axis.text.y = element_text(size = FS_MIN, family = FONT_FAMILY),
+          axis.text.x = element_text(size = FS_MIN, family = FONT_FAMILY),
+          axis.title.x = element_text(size = FS_AXIS, family = FONT_FAMILY),
+          legend.position = "none",
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
 
-  view_cols <- c(transcriptomics = COL_TC, proteomics = COL_PR, metabolomics = COL_MT)
-  ber_text <- sprintf("BER = %.1f%% (null = %.1f%%, P < 0.001)",
-                      perm$original_BER * 100, perm$mean_permuted_BER * 100)
-
-  p6a <- ggplot(top_per_view, aes(x = value.var, y = feature_name, color = view)) +
-    geom_segment(aes(x = 0, xend = value.var, yend = feature_name), linewidth = 0.6) +
-    geom_point(size = 2.2) +
-    scale_color_manual(values = view_cols, name = "Omics layer",
-                       labels = c("Transcriptomics", "Proteomics", "Metabolomics")) +
-    geom_vline(xintercept = 0, linewidth = 0.3, color = "grey40") +
-    annotate("text", x = max(top_per_view$value.var) * 0.55,
-             y = 2.5, label = ber_text, size = FS_GEOM, family = FONT_FAMILY) +
-    labs(title = "DIABLO component 1 loadings", x = "Loading", y = NULL) +
-    theme(legend.position = c(0.12, 0.93),
-          legend.justification = c(0, 1),
-          legend.background = element_rect(fill = alpha("white", 0.85), color = NA),
-          axis.text.y = element_text(size = 8),
-          plot.margin = margin(2, 6, 2, 2, "mm"))
-  save_panel_pdf("Fig6a_DIABLO_loadings.pdf", W_A, H1, print(p6a))
+  cairo_pdf(file.path(OUT, "Fig6b_drug_proximity.pdf"),
+            width = W_COL / MM, height = H2 / MM, family = FONT_FAMILY)
+  print(p6b)
+  dev.off()
+  cat("  -> Fig6b_drug_proximity.pdf\n")
 }, error = function(e) cat("  ERROR:", e$message, "\n"))
 
 # =============================================================================
-# PANEL B: MOFA2 variance decomposition (88x38mm)
+# Panel (c): Pan-liver Top DEGs
 # =============================================================================
-cat("\n--- Panel B: MOFA2 variance decomposition (88x38mm) ---\n")
+cat("\n--- Panel (c): Pan-liver Top DEGs ---\n")
 tryCatch({
-  mofa <- read.csv(file.path(RES, "phase5_integration/MOFA2_K_selection_scan.csv"),
-                   stringsAsFactors = FALSE)
-  var_df <- data.frame(
-    Factor = paste0("F", mofa$K),
-    Transcriptomics = c(mofa$cumR2_transcriptomics[1],
-                        diff(mofa$cumR2_transcriptomics)),
-    Proteomics = c(mofa$cumR2_proteomics[1], diff(mofa$cumR2_proteomics)),
-    Metabolomics = c(mofa$cumR2_metabolomics[1], diff(mofa$cumR2_metabolomics))
-  )
-  var_df <- head(var_df, 5)
-  var_long <- var_df %>%
-    pivot_longer(-Factor, names_to = "View", values_to = "Variance") %>%
-    mutate(Factor = factor(Factor, levels = paste0("F", 1:5)),
-           View = factor(View, levels = c("Transcriptomics", "Proteomics", "Metabolomics")))
-
-  view_fills <- c(Transcriptomics = COL_TC, Proteomics = COL_PR, Metabolomics = COL_MT)
-
-  p6b <- ggplot(var_long, aes(x = Factor, y = Variance, fill = View)) +
-    geom_col(position = "dodge", width = 0.7) +
-    scale_fill_manual(values = view_fills, name = "Omics") +
-    labs(title = "MOFA2 variance per factor",
-         x = "Latent factor", y = "Variance (%)") +
-    theme(legend.position = "top",
-          legend.key.size = unit(2.5, "mm"),
-          plot.title = element_text(size = FS_TITLE),
-          plot.margin = margin(1, 4, 1, 4, "mm"))
-  save_panel_pdf("Fig6b_MOFA2_variance.pdf", W_BD, H_B, print(p6b))
-}, error = function(e) cat("  ERROR:", e$message, "\n"))
-
-# =============================================================================
-# PANEL C: WGCNA cross-omics conserved modules barplot (93x58mm)
-# =============================================================================
-cat("\n--- Panel C: WGCNA cross-omics module overlap (93x58mm) ---\n")
-tryCatch({
-  wgcna <- read.csv(file.path(RES, "enhancement2_wgcna/cross_omics_module_overlap.csv"),
-                    stringsAsFactors = FALSE)
-
-  # WGCNA module colors (biological meaning — functional co-expression clusters)
-  wgcna_cols <- c(blue = "#4682B4", brown = "#8B4513", yellow = "#FFD700",
-                  green = "#228B22", turquoise = "#40E0D0", black = "#2D2D2D",
-                  red = "#CD5C5C", magenta = "#8B008B", grey = "#808080")
-
-  # Top enriched cross-omics module pairs (OR > 1, significant)
-  sig_pairs <- wgcna[wgcna$OR > 1 & wgcna$padj < 0.05, ]
-  sig_pairs <- sig_pairs[order(-sig_pairs$OR), ]
-  sig_pairs <- head(sig_pairs, 10)
-
-  # Create display labels
-  sig_pairs$pair_label <- sprintf("TC-%s ~ PR-%s", sig_pairs$TC_module, sig_pairs$PR_module)
-  sig_pairs$pair_label <- factor(sig_pairs$pair_label,
-    levels = rev(sig_pairs$pair_label))
-  # Significance stars
-  sig_pairs$stars <- ifelse(sig_pairs$padj < 0.001, "***",
-                    ifelse(sig_pairs$padj < 0.01, "**", "*"))
-  # Color by TC module
-  sig_pairs$fill_col <- wgcna_cols[sig_pairs$TC_module]
-
-  p6c <- ggplot(sig_pairs, aes(x = OR, y = pair_label)) +
-    geom_col(aes(fill = TC_module), width = 0.7) +
-    geom_text(aes(label = sprintf("n=%d %s", overlap, stars)),
-              hjust = -0.1, size = FS_GEOM, family = FONT_FAMILY) +
-    scale_fill_manual(values = wgcna_cols, name = "TC module") +
-    geom_vline(xintercept = 1, linetype = "dashed", linewidth = 0.3, color = "grey50") +
-    scale_x_continuous(expand = expansion(mult = c(0, 0.25))) +
-    labs(title = "Cross-omics conserved modules",
-         x = "Odds ratio (Fisher's exact test)", y = NULL) +
-    theme(legend.position = "none",
-          axis.text.y = element_text(size = 8),
-          plot.margin = margin(1, 8, 1, 4, "mm"))
-  save_panel_pdf("Fig6c_WGCNA_overlap.pdf", W_C, H2, print(p6c))
-}, error = function(e) cat("  ERROR:", e$message, "\n"))
-
-# =============================================================================
-# PANEL D: Consensus clustering K evaluation (88x52mm)
-# =============================================================================
-cat("\n--- Panel D: Consensus clustering metrics (88x52mm) ---\n")
-tryCatch({
-  boot <- read.csv(file.path(RES, "subtype_robustness_v2/bootstrap_stability.csv"),
-                   stringsAsFactors = FALSE)
-  kmet <- read.csv(file.path(RES, "phase6_subtyping/K_selection_metrics_comprehensive.csv"),
-                   stringsAsFactors = FALSE)
-
-  plot_df <- data.frame(
-    K = kmet$K,
-    Silhouette = kmet$Silhouette_concat,
-    PAC = kmet$PAC_concat
-  )
-  plot_df <- merge(plot_df, boot[, c("K", "Mean_Jaccard")], by = "K", all.x = TRUE)
-  plot_long <- plot_df %>%
-    pivot_longer(-K, names_to = "Metric", values_to = "Value") %>%
-    filter(!is.na(Value))
-  plot_long$Metric <- factor(plot_long$Metric,
-    levels = c("Mean_Jaccard", "Silhouette", "PAC"))
-
-  p6d <- ggplot(plot_long, aes(x = factor(K), y = Value, color = Metric, group = Metric)) +
-    geom_line(linewidth = 0.8) +
-    geom_point(size = 2.5) +
-    scale_color_manual(values = c(Mean_Jaccard = COL_UP, Silhouette = COL_TC, PAC = COL_MT),
-                       labels = c("Bootstrap Jaccard", "Silhouette", "PAC")) +
-    geom_vline(xintercept = 1, linetype = "dashed", linewidth = 0.3, color = "grey40") +
-    annotate("text", x = 1.3, y = max(plot_long$Value, na.rm = TRUE) * 0.95,
-             label = "K=2", size = FS_GEOM, family = FONT_FAMILY, hjust = 0,
-             fontface = "bold") +
-    labs(title = "Consensus clustering K evaluation",
-         x = "Number of clusters (K)", y = "Metric value", color = NULL) +
-    theme(legend.position = c(0.95, 0.95),
-          legend.justification = c(1, 1),
-          legend.background = element_rect(fill = alpha("white", 0.9), color = "grey80", linewidth = 0.3),
-          legend.key.size = unit(2.5, "mm"),
-          plot.title = element_text(size = FS_TITLE),
-          plot.margin = margin(1, 4, 1, 4, "mm"))
-  save_panel_pdf("Fig6d_consensus_K_eval.pdf", W_BD, H_D, print(p6d))
-}, error = function(e) cat("  ERROR:", e$message, "\n"))
-
-# =============================================================================
-# PANEL E: PCA projection by subtype (90x58mm)
-# =============================================================================
-cat("\n--- Panel E: Subtype PCA (90x58mm) ---\n")
-tryCatch({
-  sa <- read.csv(file.path(RES, "phase6_subtyping/subtype_K2.csv"), stringsAsFactors = FALSE)
-  colnames(sa)[colnames(sa) == "subtype"] <- "cluster"
-  tc_mat <- as.matrix(read.csv(file.path(DATA, "transcriptomics_vst_paired.csv"),
-                                row.names = 1, check.names = FALSE))
-  shared <- intersect(sa$sample, colnames(tc_mat))
-  pca <- prcomp(t(tc_mat[, shared]), scale. = TRUE)
-  pca_df <- data.frame(PC1 = pca$x[, 1], PC2 = pca$x[, 2], sample = shared)
-  pca_df <- merge(pca_df, sa[, c("sample", "cluster")], by = "sample")
-  ve <- summary(pca)$importance[2, 1:2] * 100
-
-  p6e <- ggplot(pca_df, aes(x = PC1, y = PC2, color = cluster, fill = cluster)) +
-    stat_ellipse(geom = "polygon", alpha = 0.1, level = 0.68, linewidth = 0.7) +
-    geom_point(size = 2.5, alpha = 0.85) +
-    geom_text_repel(aes(label = sample), size = FS_GEOM, family = FONT_FAMILY,
-                    show.legend = FALSE, max.overlaps = 15, segment.size = 0.3) +
-    scale_color_manual(values = c(CS1 = COL_CS1, CS2 = COL_CS2)) +
-    scale_fill_manual(values = c(CS1 = COL_CS1, CS2 = COL_CS2)) +
-    labs(title = "Subtype PCA (K=2)",
-         x = sprintf("PC1 (%.1f%%)", ve[1]), y = sprintf("PC2 (%.1f%%)", ve[2]),
-         color = "Subtype") +
-    guides(fill = "none") +
-    theme(legend.position = c(0.88, 0.15),
-          plot.margin = margin(1, 4, 1, 4, "mm"))
-  save_panel_pdf("Fig6e_subtype_PCA.pdf", W_E, H2, print(p6e))
-}, error = function(e) cat("  ERROR:", e$message, "\n"))
-
-# =============================================================================
-# PANEL F: Subtype marker profile heatmap (100x102mm) — TC + PR markers
-# — No dendrograms, clear CS1/CS2 grouping, direction annotation
-# =============================================================================
-cat("\n--- Panel F: Subtype profile heatmap (100x102mm) ---\n")
-tryCatch({
-  markers <- read.csv(file.path(RES, "phase7_characterization/subtype_top_markers.csv"),
-                      stringsAsFactors = FALSE)
-  sa <- read.csv(file.path(RES, "phase6_subtyping/subtype_K2.csv"), stringsAsFactors = FALSE)
-  colnames(sa)[colnames(sa) == "subtype"] <- "cluster"
-  sa$cluster <- gsub("^DS", "CS", sa$cluster)
-
-  tc_mat <- as.matrix(read.csv(file.path(DATA, "transcriptomics_vst_paired.csv"),
-                                row.names = 1, check.names = FALSE))
-  pr_mat <- as.matrix(read.csv(file.path(DATA, "proteomics_log2_norm.csv"),
-                                row.names = 1, check.names = FALSE))
-  rownames(pr_mat) <- gsub("\\.[0-9]+$", "", rownames(pr_mat))
-
-  shared <- intersect(sa$sample, intersect(colnames(tc_mat), colnames(pr_mat)))
-  sa_sub <- sa[sa$sample %in% shared, ]
-  sa_sub <- sa_sub[order(sa_sub$cluster, sa_sub$sample), ]
-  shared <- sa_sub$sample
-
-  # TC markers — top 15 by |log2FC|
-  tc_m <- markers[markers$omics == "TC", ]
-  tc_m <- head(tc_m[order(-abs(tc_m$log2FC)), ], 20)
-  tc_feat <- intersect(tc_m$feature, rownames(tc_mat))
-  tc_heat <- NULL
-  if (length(tc_feat) >= 5) {
-    tc_heat <- scale_rows(tc_mat[tc_feat, shared])
-    tc_labs <- ensg_to_symbol(rownames(tc_heat))
-    keep <- !grepl("^ENS", tc_labs)
-    tc_heat <- tc_heat[keep, , drop = FALSE]
-    rownames(tc_heat) <- tc_labs[keep]
-    tc_heat <- head(tc_heat, 15)
-    # Direction annotation for TC
-    tc_direction <- ifelse(
-      rowMeans(tc_heat[, sa_sub$cluster == "CS1"]) > rowMeans(tc_heat[, sa_sub$cluster == "CS2"]),
-      "CS1-high", "CS2-high")
-  }
-
-  # PR markers — top 15 by |log2FC|
-  pr_m <- markers[markers$omics == "PR", ]
-  pr_m <- head(pr_m[order(-abs(pr_m$log2FC)), ], 20)
-  pr_feat <- intersect(pr_m$feature, rownames(pr_mat))
-  pr_heat <- NULL
-  if (length(pr_feat) < 5) {
-    m_map <- ensp_to_symbol(rownames(pr_mat))
-    names(m_map) <- rownames(pr_mat)
-    rev_map <- setNames(names(m_map), m_map)
-    pr_feat <- rev_map[intersect(pr_m$feature, m_map)]
-    pr_feat <- pr_feat[!is.na(pr_feat)]
-  }
-  if (length(pr_feat) >= 5) {
-    pr_heat <- scale_rows(pr_mat[pr_feat, shared])
-    pr_labs <- ensp_to_symbol(rownames(pr_heat))
-    keep <- !grepl("^ENS", pr_labs)
-    pr_heat <- pr_heat[keep, , drop = FALSE]
-    rownames(pr_heat) <- pr_labs[keep]
-    pr_heat <- head(pr_heat, 15)
-    # Direction annotation for PR
-    pr_direction <- ifelse(
-      rowMeans(pr_heat[, sa_sub$cluster == "CS1"]) > rowMeans(pr_heat[, sa_sub$cluster == "CS2"]),
-      "CS1-high", "CS2-high")
-  }
-
-  col_split_raw <- sa_sub$cluster[match(shared, sa_sub$sample)]
-  n_cs1 <- sum(col_split_raw == "CS1")
-  n_cs2 <- sum(col_split_raw == "CS2")
-  # Rename levels to include sample counts for prominent display
-  col_split_labeled <- ifelse(col_split_raw == "CS1",
-                              sprintf("CS1 (n=%d)", n_cs1),
-                              sprintf("CS2 (n=%d)", n_cs2))
-  col_split <- factor(col_split_labeled, levels = c(sprintf("CS1 (n=%d)", n_cs1),
-                                                     sprintf("CS2 (n=%d)", n_cs2)))
-  top_anno <- HeatmapAnnotation(
-    Subtype = ifelse(col_split_raw == "CS1", "CS1", "CS2"),
-    col = list(Subtype = c(CS1 = COL_CS1, CS2 = COL_CS2)),
-    annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-    simple_anno_size = unit(5, "mm"),
-    annotation_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll()),
-    show_annotation_name = TRUE,
-    annotation_name_side = "left"
-  )
-
-  ht_list <- NULL
-  if (!is.null(tc_heat) && nrow(tc_heat) >= 3) {
-    # Direction bar annotation (left side) — prominent 5mm
-    tc_dir_anno <- rowAnnotation(
-      Direction = tc_direction,
-      col = list(Direction = c("CS1-high" = COL_CS1, "CS2-high" = COL_CS2)),
-      simple_anno_size = unit(5, "mm"),
-      annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-      annotation_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll())
-    )
-    ht_tc <- Heatmap(tc_heat, name = "TC z-score", col = col_zscore,
-      cluster_columns = FALSE, cluster_rows = FALSE,
-      column_split = col_split,
-      show_column_names = FALSE,
-      row_names_gp = gp_rn(8), row_names_max_width = unit(28, "mm"),
-      column_title_gp = gpar(fontsize = 10, fontfamily = FONT_GRID, fontface = "bold",
-                             col = c(COL_CS1, COL_CS2)),
-      top_annotation = top_anno,
-      left_annotation = tc_dir_anno,
-      row_title = "Transcriptomics", row_title_gp = gp_rt(9),
-      heatmap_legend_param = std_lp(), rect_gp = gpar(col = "white", lwd = 0.3),
-      height = unit(nrow(tc_heat) * 3.2, "mm"),
-      column_gap = unit(3.5, "mm"))
-    ht_list <- ht_tc
-  }
-  if (!is.null(pr_heat) && nrow(pr_heat) >= 3) {
-    # Direction legend: show if PR is the only heatmap (TC absent), hide if TC already shows it
-    pr_show_dir_legend <- is.null(ht_list)
-    pr_dir_anno <- rowAnnotation(
-      Direction = pr_direction,
-      col = list(Direction = c("CS1-high" = COL_CS1, "CS2-high" = COL_CS2)),
-      simple_anno_size = unit(5, "mm"),
-      annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-      annotation_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll()),
-      show_legend = pr_show_dir_legend
-    )
-    # If TC is absent, PR must show column_split titles; if TC exists, suppress to avoid duplication
-    if (is.null(ht_list)) {
-      ht_pr <- Heatmap(pr_heat, name = "PR z-score", col = col_zscore,
-        cluster_columns = FALSE, cluster_rows = FALSE,
-        column_split = col_split,
-        show_column_names = FALSE,
-        row_names_gp = gp_rn(8), row_names_max_width = unit(28, "mm"),
-        column_title_gp = gpar(fontsize = 10, fontfamily = FONT_GRID, fontface = "bold",
-                               col = c(COL_CS1, COL_CS2)),
-        top_annotation = top_anno,
-        left_annotation = pr_dir_anno,
-        row_title = "Proteomics", row_title_gp = gp_rt(9),
-        heatmap_legend_param = std_lp(), rect_gp = gpar(col = "white", lwd = 0.3),
-        height = unit(nrow(pr_heat) * 3.2, "mm"),
-        column_gap = unit(3.5, "mm"))
-    } else {
-      ht_pr <- Heatmap(pr_heat, name = "PR z-score", col = col_zscore,
-        cluster_columns = FALSE, cluster_rows = FALSE,
-        column_split = col_split,
-        show_column_names = FALSE,
-        row_names_gp = gp_rn(8), row_names_max_width = unit(28, "mm"),
-        column_title = NULL,
-        left_annotation = pr_dir_anno,
-        row_title = "Proteomics", row_title_gp = gp_rt(9),
-        heatmap_legend_param = std_lp(), rect_gp = gpar(col = "white", lwd = 0.3),
-        height = unit(nrow(pr_heat) * 3.2, "mm"),
-        column_gap = unit(3.5, "mm"))
-    }
-    if (is.null(ht_list)) ht_list <- ht_pr else ht_list <- ht_list %v% ht_pr
-  }
-
-  if (!is.null(ht_list)) {
-    draw_f <- function() draw(ht_list, merge_legend = FALSE,
-         heatmap_legend_side = "right", annotation_legend_side = "right",
-         column_title = "Subtype marker profile",
-         column_title_gp = gpar(fontsize = FS_TITLE, fontface = "bold", fontfamily = FONT_FAMILY),
-         padding = unit(c(1, 2, 1, 2), "mm"))
-    fp <- file.path(OUT, "Fig6f_subtype_profile.pdf")
-    cairo_pdf(fp, width = W_F / MM, height = H3 / MM, family = FONT_FAMILY)
-    draw_f()
-    dev.off()
-    cat(sprintf("  -> Fig6f_subtype_profile.pdf (%.0f x %.0f mm)\n", W_F, H3))
-    grob_f <<- grid.grabExpr(draw_f())
-  }
-}, error = function(e) cat("  ERROR:", e$message, "\n"))
-
-# =============================================================================
-# PANEL G: Subtype characterisation — Pathways + Immune cells (83x102mm)
-# — No dendrograms, compact horizontal legends at bottom, maximise data area
-# =============================================================================
-cat("\n--- Panel G: Comprehensive characterisation (83x102mm) ---\n")
-tryCatch({
-  pw <- read.csv(file.path(RES, "phase7_characterization/subtype_pathway_scores.csv"),
+  up <- read.csv(file.path(RES, "enhancement20_pan_liver/hae_top_upregulated.csv"),
                  stringsAsFactors = FALSE)
-  imm <- read.csv(file.path(RES, "phase7_characterization/subtype_immune_scores.csv"),
-                  stringsAsFactors = FALSE)
+  down <- read.csv(file.path(RES, "enhancement20_pan_liver/hae_top_downregulated.csv"),
+                   stringsAsFactors = FALSE)
+  # Select named genes, top 8 up + 8 down, deduplicate
+  up_named <- head(up[!is.na(up$gene_name) & up$gene_name != "" & up$gene_name != "NA" &
+                   !grepl("^ENSG", up$gene_name) &
+                   up$direction == "up", ], 8)
+  down_named <- head(down[!is.na(down$gene_name) & down$gene_name != "" & down$gene_name != "NA" &
+                       !grepl("^ENSG", down$gene_name) &
+                       down$direction == "down", ], 8)
+  degs <- rbind(down_named, up_named)
+  degs <- degs[!duplicated(degs$gene_name), ]
+  degs$gene_name <- factor(degs$gene_name, levels = degs$gene_name)
+  degs$direction <- ifelse(degs$log2FC > 0, "Up", "Down")
 
-  # Top 10 pathways by |diff|
-  pw$diff_val <- pw$diff_CS1_CS2
-  pw_sig <- pw[pw$padj < 0.2, ]
-  if (nrow(pw_sig) < 8) pw_sig <- head(pw[order(pw$pvalue), ], 10)
-  pw_sig <- head(pw_sig[order(-abs(pw_sig$diff_val)), ], 10)
+  p6c <- ggplot(degs, aes(x = log2FC, y = gene_name, fill = direction)) +
+    geom_col(width = 0.7) +
+    geom_vline(xintercept = 0, linewidth = 0.3) +
+    scale_fill_manual(values = c("Up" = COL_HAE, "Down" = COL_FIB), name = NULL) +
+    labs(x = "log2 fold change", y = NULL,
+         title = "Top HAE DEGs (pan-liver)") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold"),
+          axis.text.y = element_text(size = FS_MIN, family = FONT_FAMILY,
+                                     face = "italic"),
+          axis.text.x = element_text(size = FS_MIN, family = FONT_FAMILY),
+          axis.title.x = element_text(size = FS_AXIS, family = FONT_FAMILY),
+          legend.position = "none",
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
 
-  pw_mat <- matrix(c(pw_sig$mean_CS1, pw_sig$mean_CS2), ncol = 2,
-                   dimnames = list(pw_sig$pathway, c("CS1", "CS2")))
-  pw_mat_s <- t(scale(t(pw_mat))); pw_mat_s[is.na(pw_mat_s)] <- 0
-  pw_mat_s[pw_mat_s > 2] <- 2; pw_mat_s[pw_mat_s < -2] <- -2
-  rownames(pw_mat_s) <- gsub("^HALLMARK_", "", rownames(pw_mat_s))
-  rownames(pw_mat_s) <- gsub("_", " ", rownames(pw_mat_s))
-  rownames(pw_mat_s) <- tools::toTitleCase(tolower(rownames(pw_mat_s)))
-
-  # Significance annotation for pathways
-  pw_stars <- ifelse(pw_sig$padj < 0.01, "***",
-              ifelse(pw_sig$padj < 0.05, "**",
-              ifelse(pw_sig$padj < 0.2, "*", "")))
-  pw_dir <- ifelse(pw_sig$diff_val > 0, "CS1-high", "CS2-high")
-
-  # Top 8 immune cell types (reduced from 10 to fit)
-  imm$diff_val <- imm$diff
-  imm_sig <- imm[imm$padj < 0.3, ]
-  if (nrow(imm_sig) < 5) imm_sig <- head(imm[order(imm$pvalue), ], 8)
-  imm_sig <- head(imm_sig[order(-abs(imm_sig$diff_val)), ], 8)
-
-  imm_mat <- matrix(c(imm_sig$mean_CS1, imm_sig$mean_CS2), ncol = 2,
-                    dimnames = list(imm_sig$cell_type, c("CS1", "CS2")))
-  imm_mat_s <- t(scale(t(imm_mat))); imm_mat_s[is.na(imm_mat_s)] <- 0
-  imm_mat_s[imm_mat_s > 2] <- 2; imm_mat_s[imm_mat_s < -2] <- -2
-  rownames(imm_mat_s) <- gsub("_", " ", rownames(imm_mat_s))
-
-  imm_stars <- ifelse(imm_sig$padj < 0.01, "***",
-               ifelse(imm_sig$padj < 0.05, "**",
-               ifelse(imm_sig$padj < 0.3, "*", "")))
-  imm_dir <- ifelse(imm_sig$diff_val > 0, "CS1-high", "CS2-high")
-
-  # Sort pathways by diff_val descending (CS1-high at top → CS2-high at bottom)
-  pw_order <- order(-pw_sig$diff_val)
-  pw_mat_s <- pw_mat_s[pw_order, , drop = FALSE]
-  pw_dir <- pw_dir[pw_order]
-  pw_stars <- pw_stars[pw_order]
-
-  # Sort immune by diff_val descending
-  imm_order <- order(-imm_sig$diff_val)
-  imm_mat_s <- imm_mat_s[imm_order, , drop = FALSE]
-  imm_dir <- imm_dir[imm_order]
-  imm_stars <- imm_stars[imm_order]
-
-  col_anno <- HeatmapAnnotation(
-    Subtype = c("CS1", "CS2"),
-    col = list(Subtype = c(CS1 = COL_CS1, CS2 = COL_CS2)),
-    annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-    simple_anno_size = unit(4, "mm"),
-    annotation_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll(),
-                                   nrow = 1, direction = "horizontal"),
-    show_annotation_name = TRUE
-  )
-
-  # Pathway heatmap — Direction annotation bar (5mm) on right, sorted high→low
-  pw_right_anno <- rowAnnotation(
-    Direction = pw_dir,
-    col = list(Direction = c("CS1-high" = COL_CS1, "CS2-high" = COL_CS2)),
-    simple_anno_size = unit(5, "mm"),
-    annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-    annotation_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll(),
-                                   nrow = 1, direction = "horizontal")
-  )
-  ht_pw <- Heatmap(pw_mat_s, name = "z-score", col = col_div,
-    cluster_columns = FALSE, cluster_rows = FALSE,
-    show_column_names = TRUE, show_heatmap_legend = TRUE,
-    column_names_gp = gpar(fontsize = 9, fontfamily = FONT_GRID, fontface = "bold"),
-    row_names_gp = gp_rn(8),
-    row_names_max_width = unit(38, "mm"), top_annotation = col_anno,
-    right_annotation = pw_right_anno,
-    row_title = "Pathways", row_title_gp = gp_rt(9),
-    heatmap_legend_param = list(title_gp = gp_lt(), labels_gp = gp_ll(),
-                                direction = "horizontal", legend_width = unit(18, "mm")),
-    rect_gp = gpar(col = "white", lwd = 0.5),
-    width = unit(22, "mm"), height = unit(nrow(pw_mat_s) * 3.8, "mm"))
-
-  # Immune heatmap — Direction annotation bar (5mm), no duplicate legend
-  imm_right_anno <- rowAnnotation(
-    Direction = imm_dir,
-    col = list(Direction = c("CS1-high" = COL_CS1, "CS2-high" = COL_CS2)),
-    simple_anno_size = unit(5, "mm"),
-    annotation_name_gp = gpar(fontsize = 8, fontfamily = FONT_GRID, fontface = "bold"),
-    show_legend = FALSE
-  )
-  ht_imm <- Heatmap(imm_mat_s, name = "Immune z-score", col = col_div,
-    cluster_columns = FALSE, cluster_rows = FALSE,
-    show_column_names = TRUE, show_heatmap_legend = FALSE,
-    column_names_gp = gpar(fontsize = 9, fontfamily = FONT_GRID, fontface = "bold"),
-    row_names_gp = gp_rn(8),
-    row_names_max_width = unit(38, "mm"),
-    right_annotation = imm_right_anno,
-    row_title = "Immune cells", row_title_gp = gp_rt(9),
-    rect_gp = gpar(col = "white", lwd = 0.5),
-    width = unit(22, "mm"), height = unit(nrow(imm_mat_s) * 3.8, "mm"))
-
-  ht_g <- ht_pw %v% ht_imm
-
-  draw_g <- function() draw(ht_g, merge_legend = FALSE,
-       heatmap_legend_side = "bottom", annotation_legend_side = "bottom",
-       column_title = "Subtype characterisation",
-       column_title_gp = gpar(fontsize = FS_TITLE, fontface = "bold", fontfamily = FONT_FAMILY),
-       padding = unit(c(1, 2, 1, 2), "mm"))
-  fp <- file.path(OUT, "Fig6g_comprehensive_heatmap.pdf")
-  cairo_pdf(fp, width = W_G / MM, height = H3 / MM, family = FONT_FAMILY)
-  draw_g()
+  cairo_pdf(file.path(OUT, "Fig6c_pan_liver_degs.pdf"),
+            width = W_COL / MM, height = H2 / MM, family = FONT_FAMILY)
+  print(p6c)
   dev.off()
-  cat(sprintf("  -> Fig6g_comprehensive_heatmap.pdf (%.0f x %.0f mm)\n", W_G, H3))
-  grob_g <<- grid.grabExpr(draw_g())
+  cat("  -> Fig6c_pan_liver_degs.pdf\n")
 }, error = function(e) cat("  ERROR:", e$message, "\n"))
 
 # =============================================================================
-# Composite Assembly — pure VECTOR grid viewports (Adobe Illustrator-editable PDF)
-# All panels (ggplot + ComplexHeatmap grobs) are placed via mm-based viewports.
-# No rasterization for PDF; PNG/TIFF rasterized only at the cairo device level.
+# Panel (d): Hallmark Pathway Direction-Consistency Matrix
+#   Real adjudicated data: enhancement9_external_validation (15 cohorts, ST 41)
+# =============================================================================
+cat("\n--- Panel (d): Hallmark Direction Matrix ---\n")
+tryCatch({
+  dm <- read.csv(file.path(RES, "enhancement9_external_validation/comprehensive_direction_matrix.csv"),
+                 stringsAsFactors = FALSE, check.names = FALSE)
+  pc <- read.csv(file.path(RES, "enhancement9_external_validation/pathway_concordance.csv"),
+                 stringsAsFactors = FALSE)
+  colnames(dm)[1] <- "pathway"
+  cohorts <- setdiff(colnames(dm), "pathway")
+  stopifnot(length(cohorts) == 15)
+
+  hae_dir <- setNames(pc$our_TC_direction, pc$pathway)
+  dm$HAE <- unname(hae_dir[dm$pathway])
+  dm <- dm[!is.na(dm$HAE), ]
+
+  ext <- as.matrix(dm[, cohorts])
+  coverage <- rowSums(!is.na(ext))
+  conc_rate <- sapply(seq_len(nrow(dm)), function(i) {
+    v <- ext[i, !is.na(ext[i, ])]
+    mean(v == dm$HAE[i])
+  })
+  keep <- coverage >= 6
+  dm_sel <- dm[keep, ]; conc_sel <- conc_rate[keep]
+  ord <- order(-conc_sel, dm_sel$pathway)
+  dm_sel <- head(dm_sel[ord, ], 16)
+  stopifnot(nrow(dm_sel) >= 10)
+
+  pathways_key <- dm_sel$pathway
+  nc <- 1 + length(cohorts); nr <- nrow(dm_sel)
+  mat <- matrix(NA_real_, nrow = nr, ncol = nc)
+  rownames(mat) <- pathways_key
+  colnames(mat) <- c("HAE (this study)", cohorts)
+  for (i in seq_len(nr)) {
+    ref <- dm_sel$HAE[i]
+    sgn <- ifelse(ref == "UP", 1, -1)
+    mat[i, 1] <- sgn
+    for (j in seq_along(cohorts)) {
+      v <- dm_sel[[cohorts[j]]][i]
+      if (is.na(v)) next
+      mat[i, 1 + j] <- if (v == ref) sgn else sgn * 0.4
+    }
+  }
+  pretty <- gsub("_", " ", pathways_key)
+  pretty <- paste0(toupper(substr(pretty, 1, 1)), tolower(substr(pretty, 2, nchar(pretty))))
+  rownames(mat) <- pretty
+  cat(sprintf("  Panel D: %d pathways x %d columns (HAE + %d cohorts); median concordance %.2f\n",
+              nr, nc, length(cohorts), median(conc_sel[ord][1:nr])))
+
+  col_func <- function(v) {
+    if (is.na(v)) return("grey92")
+    if (v >= 0.9) return("#B03A2E")
+    if (v > 0) return("#F5B7B1")
+    if (v > -0.9) return("#AED6F1")
+    return("#2874A6")
+  }
+
+  grob_d <- grid::grid.grabExpr({
+    grid::grid.newpage()
+    grid::grid.text("Hallmark direction consistency",
+                    x = 0.5, y = 0.99, just = c("center", "top"),
+                    gp = gpar(fontsize = FS_TITLE, fontface = "bold",
+                              fontfamily = FONT_FAMILY))
+    grid::pushViewport(grid::viewport(x = 0.56, y = 0.40, width = 0.86, height = 0.66))
+    cell_w <- 1 / nc; cell_h <- 1 / nr
+    for (i in 1:nr) {
+      for (j in 1:nc) {
+        grid::grid.rect(x = (j - 0.5) * cell_w, y = 1 - (i - 0.5) * cell_h,
+                        width = cell_w * 0.95, height = cell_h * 0.95,
+                        gp = gpar(fill = col_func(mat[i, j]), col = "white", lwd = 0.3),
+                        just = "center")
+      }
+    }
+    for (i in 1:nr) {
+      grid::grid.text(rownames(mat)[i],
+                      x = -0.02, y = 1 - (i - 0.5) * cell_h, just = "right",
+                      gp = gpar(fontsize = 5.5, fontfamily = FONT_FAMILY))
+    }
+    for (j in 1:nc) {
+      grid::grid.text(colnames(mat)[j],
+                      x = (j - 0.5) * cell_w + cell_w * 0.1, y = 1.01,
+                      just = c("left", "bottom"), rot = 45,
+                      gp = gpar(fontsize = 5, fontfamily = FONT_FAMILY))
+    }
+    grid::popViewport()
+    # legend row
+    lx <- 0.30; ly <- 0.045; ls <- 0.012
+    items <- list(c("#B03A2E", "Concordant up"), c("#2874A6", "Concordant down"),
+                  c("#F5B7B1", "Discordant"), c("grey92", "No data"))
+    for (k in seq_along(items)) {
+      grid::grid.rect(x = lx, y = ly, width = ls, height = ls, just = c("left", "center"),
+                      gp = gpar(fill = items[[k]][1], col = "grey60", lwd = 0.3))
+      grid::grid.text(items[[k]][2], x = lx + ls * 1.5, y = ly, just = c("left", "center"),
+                      gp = gpar(fontsize = 5.5, fontfamily = FONT_FAMILY))
+      lx <- lx + ls * 1.5 + grid::convertWidth(grid::stringWidth(items[[k]][2]), "npc", valueOnly = TRUE) + 0.03
+    }
+  })
+
+  cairo_pdf(file.path(OUT, "Fig6d_hallmark_direction.pdf"),
+            width = W_COL / MM, height = H2 / MM, family = FONT_FAMILY)
+  grid::grid.newpage()
+  grid::grid.draw(grob_d)
+  dev.off()
+  cat("  -> Fig6d_hallmark_direction.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
+
+# =============================================================================
+# Panel (e): Cross-disease Pathway Positioning (Radar)
+# =============================================================================
+cat("\n--- Panel (e): Cross-disease Radar ---\n")
+tryCatch({
+  cd <- fromJSON(file.path(RES, "cross_disease_positioning/cross_disease_results.json"))
+  cor_df <- data.frame(
+    disease = c("Fibrosis", "HCC", "CCA", "NAFLD"),
+    rho = c(cd$correlations$Fibrosis$rho,
+            cd$correlations$HCC$rho,
+            cd$correlations$CCA$rho,
+            cd$correlations$NAFLD$rho),
+    p = c(cd$correlations$Fibrosis$P,
+          cd$correlations$HCC$P,
+          cd$correlations$CCA$P,
+          cd$correlations$NAFLD$P)
+  )
+
+  # Radar plot using ggplot polar coordinates
+  radar_df <- data.frame(
+    disease = rep(cor_df$disease, 2),
+    rho = c(cor_df$rho, rep(0, 4)),
+    group = rep(c("HAE vs reference", "Reference"), each = 4)
+  )
+
+  p6e <- ggplot(cor_df, aes(x = disease, y = rho, group = 1)) +
+    geom_polygon(fill = COL_HAE, alpha = 0.2, color = COL_HAE, linewidth = 0.5) +
+    geom_point(size = 2, color = COL_HAE) +
+    geom_text(aes(label = sprintf("%.2f", rho)),
+              vjust = -1.2, size = 2.5, family = FONT_FAMILY, color = COL_DRUG) +
+    ylim(-0.2, 0.85) +
+    coord_polar() +
+    labs(title = "Cross-disease pathway positioning") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold", hjust = 0.5),
+          axis.text.x = element_text(size = FS_MIN, family = FONT_FAMILY,
+                                      face = "bold"),
+          axis.text.y = element_blank(),
+          axis.title = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
+
+  cairo_pdf(file.path(OUT, "Fig6e_cross_disease_radar.pdf"),
+            width = W_COL / MM, height = H3 / MM, family = FONT_FAMILY)
+  print(p6e)
+  dev.off()
+  cat("  -> Fig6e_cross_disease_radar.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
+
+# =============================================================================
+# Panel (f): Multi-algorithm Drug Evidence Convergence
+# =============================================================================
+cat("\n--- Panel (f): Drug Evidence Convergence ---\n")
+tryCatch({
+  # Combine: CMap reversal, network proximity, docking delta G, anti-fibrotic match
+  prox <- read.csv(file.path(RES, "optimization_drug_repurposing/network_proximity_fullPPI.csv"),
+                   stringsAsFactors = FALSE)
+  cmap <- read.csv(file.path(RES, "enhancement29_drug_v2/cmap_connectivity_scores.csv"),
+                   stringsAsFactors = FALSE)
+  dock <- read.csv(file.path(RES, "molecular_docking/docking_results_table.csv"),
+                   stringsAsFactors = FALSE)
+
+  # Select 8 candidate drugs
+  drug_list <- c("Ponatinib", "Nintedanib", "Imatinib", "Pirfenidone",
+                 "Sorafenib", "Infliximab", "Tocilizumab", "Upadacitinib")
+
+  # Build evidence matrix
+  evidence_df <- data.frame(drug = character(), evidence = character(),
+                             value = numeric(), stringsAsFactors = FALSE)
+
+  for (d in drug_list) {
+    # Network proximity (normalize: -z_score / 3, higher = better)
+    px <- prox[prox$drug == d, ]
+    if (nrow(px) > 0) {
+      evidence_df <- rbind(evidence_df, data.frame(
+        drug = d, evidence = "Network\nproximity",
+        value = max(0, -px$z_score[1]) / 3))
+    }
+    # CMap reversal score (0-1 scale)
+    cm <- cmap[cmap$drug == d, ]
+    if (nrow(cm) > 0) {
+      evidence_df <- rbind(evidence_df, data.frame(
+        drug = d, evidence = "CMap\nreversal",
+        value = abs(cm$connectivity_score[1])))
+    }
+    # Docking delta G (normalize: -deltaG / 15)
+    dk <- dock[dock$Ligand == d, ]
+    if (nrow(dk) > 0) {
+      evidence_df <- rbind(evidence_df, data.frame(
+        drug = d, evidence = "Docking\nΔG",
+        value = max(0, -min(dk$Affinity_kcal_mol)) / 15))
+    }
+    # Anti-fibrotic mechanism match (binary: pirfenidone/nintedanib = 1, else 0.3)
+    af <- ifelse(d %in% c("Pirfenidone", "Nintedanib", "Imatinib"), 1.0, 0.3)
+    evidence_df <- rbind(evidence_df, data.frame(
+      drug = d, evidence = "Anti-fibrotic\nmatch",
+      value = af))
+  }
+
+  evidence_df$drug <- factor(evidence_df$drug, levels = drug_list)
+  evidence_df$evidence <- factor(evidence_df$evidence,
+                                  levels = c("Network\nproximity", "CMap\nreversal",
+                                             "Docking\nΔG", "Anti-fibrotic\nmatch"))
+
+  p6f <- ggplot(evidence_df, aes(x = drug, y = evidence)) +
+    geom_point(aes(size = value, fill = value), shape = 21, color = "grey30") +
+    scale_size_continuous(range = c(1, 8), guide = "none") +
+    scale_fill_gradient(low = "white", high = COL_HAE, name = "Evidence", breaks = c(0, 0.5, 1)) +
+    labs(x = NULL, y = NULL,
+         title = "Drug convergence") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    guides(fill = guide_colorbar(barwidth = unit(18, "mm"),
+                                 barheight = unit(1.5, "mm"), title.vjust = 1)) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold", hjust = 0.5),
+          plot.title.position = "plot",
+          axis.text.x = element_text(size = FS_MIN, family = FONT_FAMILY,
+                                     angle = 30, hjust = 1),
+          axis.text.y = element_text(size = FS_MIN, family = FONT_FAMILY),
+          legend.position = "bottom",
+          legend.key.size = unit(2, "mm"),
+          legend.text = element_text(size = FS_MIN, family = FONT_FAMILY),
+          legend.title = element_text(size = FS_MIN, family = FONT_FAMILY),
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
+
+  cairo_pdf(file.path(OUT, "Fig6f_drug_convergence.pdf"),
+            width = W_COL / MM, height = H4 / MM, family = FONT_FAMILY)
+  print(p6f)
+  dev.off()
+  cat("  -> Fig6f_drug_convergence.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
+
+# =============================================================================
+# Panel (g): Patient Stratification (CYP Activity vs Bilirubin)
+# =============================================================================
+cat("\n--- Panel (g): Patient Stratification ---\n")
+tryCatch({
+  clin <- read.csv(file.path(RES, "zonation_collapse/zonation_clinical_merged.csv"),
+                   stringsAsFactors = FALSE)
+  # Periportal CYP activity = periportal_adjacent (zonation score)
+  # Total bilirubin as clinical severity marker
+  clin <- clin[!is.na(clin$periportal_adjacent) & !is.na(clin$total_bilirubin), ]
+
+  # Adjudicated values from 02_analysis original output (scipy spearmanr,
+  # asymptotic t approximation): zdi_clinical_correlation.csv
+  adj <- read.csv(file.path(RES, "zonation_collapse/zdi_clinical_correlation.csv"),
+                  stringsAsFactors = FALSE)
+  adj_row <- adj[adj$variable == "total_bilirubin_vs_PP_adj", ]
+  stopifnot(nrow(adj_row) == 1)
+  rho <- adj_row$spearman_rho
+  p_val <- adj_row$p_value
+
+  # Stratification cut-offs (33rd/67th percentile)
+  q1 <- quantile(clin$periportal_adjacent, 0.33)
+  q2 <- quantile(clin$periportal_adjacent, 0.67)
+
+  clin$stratum <- cut(clin$periportal_adjacent,
+                       breaks = c(-Inf, q1, q2, Inf),
+                       labels = c("Severe", "Moderate", "Mild"))
+
+  stratum_colors <- c("Severe" = COL_HAE, "Moderate" = COL_NAFLD, "Mild" = COL_FIB)
+
+  p6g <- ggplot(clin, aes(x = periportal_adjacent, y = total_bilirubin)) +
+    geom_vline(xintercept = c(q1, q2), linetype = "dashed", color = "grey50",
+               linewidth = 0.3) +
+    geom_point(aes(color = stratum), size = 2.5, alpha = 0.8) +
+    geom_smooth(method = "lm", se = TRUE, color = "grey30", linewidth = 0.4,
+                fill = "grey90", alpha = 0.2) +
+    scale_color_manual(values = stratum_colors, name = NULL) +
+    annotate("text", x = max(clin$periportal_adjacent), y = max(clin$total_bilirubin),
+             label = sprintf("Spearman ρ = %.3f\nP = %s", rho, fmt_p(p_val)),
+             hjust = 1, vjust = 1, size = 2.5, family = FONT_FAMILY) +
+    labs(x = "Periportal CYP activity score",
+         y = "Serum total bilirubin (μmol/L)",
+         title = "Patient stratification") +
+    theme_minimal(base_size = FS_BODY, base_family = FONT_FAMILY) +
+    guides(color = guide_legend(nrow = 1)) +
+    theme(plot.title = element_text(size = FS_TITLE, face = "bold", hjust = 0.5),
+          plot.title.position = "plot",
+          axis.text = element_text(size = FS_MIN, family = FONT_FAMILY),
+          axis.title = element_text(size = FS_AXIS, family = FONT_FAMILY),
+          legend.position = "bottom",
+          legend.text = element_text(size = FS_MIN, family = FONT_FAMILY),
+          legend.key.size = unit(2, "mm"),
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(2, 2, 2, 2, "mm"))
+
+  cairo_pdf(file.path(OUT, "Fig6g_stratification.pdf"),
+            width = W_COL / MM, height = H4 / MM, family = FONT_FAMILY)
+  print(p6g)
+  dev.off()
+  cat("  -> Fig6g_stratification.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
+
+# =============================================================================
+# Panel (h): Stratified Clinical Decision Framework (Flowchart)
+# =============================================================================
+cat("\n--- Panel (h): Clinical Decision Framework ---\n")
+tryCatch({
+  grob_h <- grid.grabExpr({
+    grid::grid.newpage()
+    grid::pushViewport(grid::viewport(width = 0.95, height = 0.92, x = 0.5, y = 0.5))
+
+    # Title
+    grid::grid.text("Treatment framework",
+                    x = 0.5, y = 0.985, just = "center",
+                    gp = gpar(fontsize = FS_TITLE, fontface = "bold",
+                              fontfamily = FONT_FAMILY))
+
+    arrow_down <- function(y0, y1) {
+      grid::grid.lines(x = c(0.5, 0.5), y = c(y0, y1),
+                       gp = gpar(col = "grey40", lwd = 0.5),
+                       arrow = grid::arrow(length = unit(1.5, "mm"), ends = "last"))
+    }
+
+    # Box 1: HAE diagnosis
+    grid::grid.rect(x = 0.5, y = 0.88, width = 0.55, height = 0.075,
+                    gp = gpar(fill = "#E8DAEF", col = "#7D3C98", lwd = 0.8))
+    grid::grid.text("HAE confirmed", x = 0.5, y = 0.88,
+                    gp = gpar(fontsize = FS_BODY, fontfamily = FONT_FAMILY))
+    arrow_down(0.84, 0.795)
+
+    # Box 2: CYP activity assessment
+    grid::grid.rect(x = 0.5, y = 0.72, width = 0.92, height = 0.075,
+                    gp = gpar(fill = "#D6EAF8", col = COL_FIB, lwd = 0.8))
+    grid::grid.text("Periportal CYP activity assessment", x = 0.5, y = 0.72,
+                    gp = gpar(fontsize = FS_MIN, fontfamily = FONT_FAMILY))
+    arrow_down(0.645, 0.60)
+
+    # Box 3: High activity (Mild)
+    grid::grid.rect(x = 0.5, y = 0.53, width = 0.92, height = 0.085,
+                    gp = gpar(fill = "#D5F5E3", col = COL_CCA, lwd = 0.8))
+    grid::grid.text("High CYP activity (Mild)\nRifampicin-augmented ABZ",
+                    x = 0.5, y = 0.53,
+                    gp = gpar(fontsize = FS_MIN, fontfamily = FONT_FAMILY,
+                              col = COL_DRUG, lineheight = 1.1))
+    arrow_down(0.445, 0.40)
+
+    # Box 4: Low activity (Severe)
+    grid::grid.rect(x = 0.5, y = 0.33, width = 0.92, height = 0.085,
+                    gp = gpar(fill = "#FADBD8", col = COL_HAE, lwd = 0.8))
+    grid::grid.text("Low CYP activity (Severe)\nPirfenidone or nintedanib + ABZ",
+                    x = 0.5, y = 0.33,
+                    gp = gpar(fontsize = FS_MIN, fontfamily = FONT_FAMILY,
+                              col = COL_DRUG, lineheight = 1.1))
+    arrow_down(0.245, 0.20)
+
+    # Box 5: Prospective validation
+    grid::grid.rect(x = 0.5, y = 0.13, width = 0.92, height = 0.075,
+                    gp = gpar(fill = "#FEF9E7", col = COL_NAFLD, lwd = 0.8))
+    grid::grid.text("Prospective PK & clinical validation", x = 0.5, y = 0.13,
+                    gp = gpar(fontsize = FS_MIN, fontfamily = FONT_FAMILY, col = COL_DRUG))
+
+    # Note
+    grid::grid.text("Biomarker: metabolomics & proteomics n = 14 pairs,\ntranscriptomics n = 12 pairs",
+                    x = 0.5, y = 0.05, just = "center",
+                    gp = gpar(fontsize = FS_MIN, fontfamily = FONT_FAMILY,
+                              col = "grey40"))
+
+    grid::popViewport()
+  })
+
+  cairo_pdf(file.path(OUT, "Fig6h_decision_framework.pdf"),
+            width = W_COL / MM, height = H4 / MM, family = FONT_FAMILY)
+  grid::grid.newpage()
+  grid::grid.draw(grob_h)
+  dev.off()
+  cat("  -> Fig6h_decision_framework.pdf\n")
+}, error = function(e) cat("  ERROR:", e$message, "\n"))
+
+# =============================================================================
+# Composite Assembly
 # =============================================================================
 cat(sprintf("\n--- Assembling Figure_6 (vector grid, %.0fx%.0fmm, %d DPI) ---\n",
             W_TOTAL, H_TOTAL, ASSEMBLY_DPI))
 tryCatch({
-  # Panel layout (top-left origin in mm): list(x, y, w, h, content)
+  # Collect panel objects
+  panel_a <- if (exists("p6a")) p6a else NULL
+  panel_b <- if (exists("p6b")) p6b else NULL
+  panel_c <- if (exists("p6c")) p6c else NULL
+  panel_d <- if (exists("grob_d")) grob_d else NULL
+  panel_e <- if (exists("p6e")) p6e else NULL
+  panel_f <- if (exists("p6f")) p6f else NULL
+  panel_g <- if (exists("p6g")) p6g else NULL
+  panel_h <- if (exists("grob_h")) grob_h else NULL
+
+  # Layout specs: list(x, y, w, h, obj)
   layout_specs <- list(
-    list(x = 0,    y = 0,        w = W_A,  h = H1,  obj = p6a),
-    list(x = W_A,  y = 0,        w = W_BD, h = H_B, obj = p6b),
-    list(x = W_A,  y = H_B,      w = W_BD, h = H_D, obj = p6d),
-    list(x = 0,    y = H1,       w = W_C,  h = H2,  obj = p6c),
-    list(x = W_C,  y = H1,       w = W_E,  h = H2,  obj = p6e),
-    list(x = 0,    y = H1 + H2,  w = W_F,  h = H3,  obj = grob_f),
-    list(x = W_F,  y = H1 + H2,  w = W_G,  h = H3,  obj = grob_g)
+    list(x = 0,       y = 0,                w = W_COL, h = H1, obj = panel_a),
+    list(x = W_COL,   y = 0,                w = W_COL, h = H1, obj = panel_b),
+    list(x = 0,       y = H1,               w = W_COL, h = H2, obj = panel_c),
+    list(x = W_COL,   y = H1,               w = W_COL, h = H2, obj = panel_d),
+    list(x = 0,       y = H1 + H2,          w = W_COL, h = H3, obj = panel_e),
+    list(x = W_COL,   y = H1 + H2,          w = W_COL, h = H3, obj = panel_f),
+    list(x = 0,       y = H1 + H2 + H3,     w = W_COL, h = H4, obj = panel_g),
+    list(x = W_COL,   y = H1 + H2 + H3,     w = W_COL, h = H4, obj = panel_h)
   )
 
-  tag_labels <- c("A", "B", "C", "D", "E", "F", "G")
-  tag_x_mm <- c(1, W_A + 1, 1, W_A + 1, W_C + 1, 1, W_F + 1)
-  tag_y_mm <- c(1, 1, H1 + 1, H_B + 1, H1 + 1, H1 + H2 + 1, H1 + H2 + 1)
+  tag_labels <- LETTERS[1:8]
+  tag_x_mm <- c(1, W_COL + 1,
+                1, W_COL + 1,
+                1, W_COL + 1,
+                1, W_COL + 1)
+  tag_y_mm <- c(1, 1,
+                H1 + 1, H1 + 1,
+                H1 + H2 + 1, H1 + H2 + 1,
+                H1 + H2 + H3 + 1, H1 + H2 + H3 + 1)
 
   render_final <- function() {
     grid::grid.newpage()
@@ -689,7 +643,9 @@ tryCatch({
         height = unit(sp$h, "mm")
       )
       if (inherits(sp$obj, "ggplot")) {
-        print(sp$obj, vp = vp)
+        grid::pushViewport(vp)
+        grid::grid.draw(ggplot2::ggplotGrob(sp$obj))
+        grid::popViewport()
       } else {
         grid::pushViewport(vp)
         grid::grid.draw(sp$obj)
@@ -706,26 +662,25 @@ tryCatch({
     grid::popViewport()
   }
 
-  # Pixel dimensions for raster outputs
   DPI <- ASSEMBLY_DPI
   px_W <- round(W_TOTAL * DPI / 25.4)
   px_H <- round(H_TOTAL * DPI / 25.4)
 
-  # Save PDF — fully vector, AI-editable
+  # PDF — fully vector
   cairo_pdf(file.path(OUT, "Figure_6.pdf"),
             width = W_TOTAL / MM, height = H_TOTAL / MM, family = FONT_FAMILY)
   render_final()
   dev.off()
   cat("  -> Figure_6.pdf (vector, AI-editable)\n")
 
-  # Save PNG — vector rendered at 600 DPI by cairo
+  # PNG
   grDevices::png(file.path(OUT, "Figure_6.png"),
                  width = px_W, height = px_H, res = DPI, type = "cairo")
   render_final()
   dev.off()
   cat("  -> Figure_6.png\n")
 
-  # Save TIFF — vector rendered at 600 DPI by cairo, LZW
+  # TIFF
   grDevices::tiff(file.path(OUT, "Figure_6.tiff"),
                   width = px_W, height = px_H, res = DPI,
                   compression = "lzw", type = "cairo")

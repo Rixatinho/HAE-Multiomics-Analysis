@@ -589,7 +589,7 @@ tryCatch({
 
     # Panel labels (a-h)
     label_data <- data.frame(
-      text = c("a", "b", "c", "d", "e", "f", "g", "h"),
+      text = c("A", "B", "C", "D", "E", "F", "G", "H"),
       x_mm = c(2, W_A + 2, 2, W_C + 2, 2, W_E + 2, 2, W_G + 2),
       y_mm = c(2, 2,
                H1 + 2, H1 + 2,

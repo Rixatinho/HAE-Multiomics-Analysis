@@ -426,7 +426,7 @@ tryCatch({
       width=unit(W_R,"mm"), height=unit(H4,"mm"), just=c("left","bottom")))
     print(p_H, newpage=FALSE); grid::popViewport()
     label_data <- data.frame(
-      text=c("a","b","c","d","e","f","g","h"),
+      text=c("A","B","C","D","E","F","G","H"),
       x_mm=c(2,W_L+2,2,W_L+2,2,W_L+2,2,W_L+2),
       y_mm=c(H2+H3+H4+H1-2,H2+H3+H4+H1-2,H3+H4+H2-2,H3+H4+H2-2,
              H4+H3-2,H4+H3-2,H4-2,H4-2), stringsAsFactors=FALSE)

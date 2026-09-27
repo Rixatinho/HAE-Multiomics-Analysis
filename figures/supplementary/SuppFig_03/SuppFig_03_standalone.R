@@ -486,10 +486,10 @@ render_vector_composite <- function() {
 
   # Panel labels (a-h) overlaid as vector text
   label_positions <- list(
-    list("a", 1, 1), list("b", 1, 2),
-    list("c", 2, 1), list("d", 2, 2),
-    list("e", 3, 1), list("f", 3, 2),
-    list("g", 4, 1), list("h", 4, 2)
+    list("A", 1, 1), list("B", 1, 2),
+    list("C", 2, 1), list("D", 2, 2),
+    list("E", 3, 1), list("F", 3, 2),
+    list("G", 4, 1), list("H", 4, 2)
   )
   for (lp in label_positions) {
     pushViewport(viewport(layout.pos.row = lp[[2]], layout.pos.col = lp[[3]]))

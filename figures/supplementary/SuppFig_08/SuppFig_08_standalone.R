@@ -442,7 +442,7 @@ tryCatch({
 
     # Panel labels — top-aligned within each row
     label_data <- data.frame(
-      text = c("a","b","c","d","e","f","g","h"),
+      text = c("A","B","C","D","E","F","G","H"),
       x_mm = c(2,
                2,    W_LEFT+2,
                2,    W_LEFT+2,

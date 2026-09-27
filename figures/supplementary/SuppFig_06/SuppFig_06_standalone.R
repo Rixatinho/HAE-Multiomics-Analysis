@@ -633,7 +633,7 @@ tryCatch({
     grid::popViewport()
 
     # Panel labels: 12pt bold, 2mm inset from each panel top-left
-    labels <- c("a", "b", "c", "d", "e", "f", "g", "h")
+    labels <- c("A", "B", "C", "D", "E", "F", "G", "H")
     lx_mm <- c(2, W1_L + 2, 2, W2_L + 2, 2, W3_L + 2, 2, W4_L + 2)
     ly_mm <- c(H2+H3+H4+H1-2, H2+H3+H4+H1-2,
                H3+H4+H2-2, H3+H4+H2-2,

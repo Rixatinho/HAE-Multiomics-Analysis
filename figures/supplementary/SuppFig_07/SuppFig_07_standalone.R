@@ -337,7 +337,7 @@ tryCatch({
     draw(ht_C, newpage=FALSE); grid::popViewport()
     # Labels
     label_data <- data.frame(
-      text=c("a","b","c"),
+      text=c("A","B","C"),
       x_mm=c(2, W_L+2, 2),
       y_mm=c(H_TOTAL-2, H_TOTAL-2, H2-2), stringsAsFactors=FALSE)
     for(i in seq_len(nrow(label_data))) {

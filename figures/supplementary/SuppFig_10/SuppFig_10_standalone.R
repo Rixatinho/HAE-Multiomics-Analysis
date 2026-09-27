@@ -621,7 +621,7 @@ render_composite <- function() {
 
   # Panel labels (a-j)
   labs <- data.frame(
-    lab = letters[1:10],
+    lab = LETTERS[1:10],
     x = c(2, W_L+2, 2, W_L+2, 2, W_L+2, 2, W_L+2, 2, W_L+7),
     y = c(y1+H_ROW-2, y1+H_ROW-2, y2+H_ROW-2, y2+H_ROW-2,
           y3+H_ROW-2, y3+H_ROW-2, y4+H_ROW-2, y4+H_ROW-2,

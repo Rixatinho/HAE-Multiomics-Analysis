@@ -708,7 +708,7 @@ y_bot  <- c(
 # Panel label positions: rows 1-3 uniform cols; row 4 asymmetric
 lbl_x <- c(rep(x_left, times = 3) + 2, ROW4_X + 2)
 lbl <- data.frame(
-  lab  = letters[1:12],
+  lab  = LETTERS[1:12],
   x_mm = lbl_x,
   y_mm = rep(y_bot + ROW_H - 2, each = 3),
   stringsAsFactors = FALSE

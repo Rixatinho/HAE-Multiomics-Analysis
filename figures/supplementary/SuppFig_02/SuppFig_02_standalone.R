@@ -704,14 +704,14 @@ tryCatch({
 
   # Panel positioning: exact mm coordinates (x, y from top-left), with margins
   panels_layout <- list(
-    list(x = M,            y = M,          w = round(AW/3),             h = rh1, p = p_va,    tag = "a"),
-    list(x = M+round(AW/3),   y = M,      w = round(AW/3),             h = rh1, p = p_vb,    tag = "b"),
-    list(x = M+2*round(AW/3), y = M,      w = AW-2*round(AW/3),       h = rh1, p = p_vc,    tag = "c"),
-    list(x = M,            y = M+rh1,      w = round(AW*88/183),       h = rh2, p = p_D,     tag = "d"),
-    list(x = M+round(AW*88/183), y = M+rh1, w = AW-round(AW*88/183), h = rh2, p = p_E,     tag = "e"),
-    list(x = M,            y = M+rh1+rh2,  w = round(AW*55/183),       h = rh3, p = p_bar_f, tag = "f"),
-    list(x = M+round(AW*55/183),   y = M+rh1+rh2, w = round(AW*55/183),       h = rh3, p = p_bar_g, tag = "g"),
-    list(x = M+2*round(AW*55/183), y = M+rh1+rh2, w = AW-2*round(AW*55/183), h = rh3, p = p_bar_h, tag = "h")
+    list(x = M,            y = M,          w = round(AW/3),             h = rh1, p = p_va,    tag = "A"),
+    list(x = M+round(AW/3),   y = M,      w = round(AW/3),             h = rh1, p = p_vb,    tag = "B"),
+    list(x = M+2*round(AW/3), y = M,      w = AW-2*round(AW/3),       h = rh1, p = p_vc,    tag = "C"),
+    list(x = M,            y = M+rh1,      w = round(AW*88/183),       h = rh2, p = p_D,     tag = "D"),
+    list(x = M+round(AW*88/183), y = M+rh1, w = AW-round(AW*88/183), h = rh2, p = p_E,     tag = "E"),
+    list(x = M,            y = M+rh1+rh2,  w = round(AW*55/183),       h = rh3, p = p_bar_f, tag = "F"),
+    list(x = M+round(AW*55/183),   y = M+rh1+rh2, w = round(AW*55/183),       h = rh3, p = p_bar_g, tag = "G"),
+    list(x = M+2*round(AW*55/183), y = M+rh1+rh2, w = AW-2*round(AW*55/183), h = rh3, p = p_bar_h, tag = "H")
   )
 
   # Render function: place each panel into exact mm viewport
