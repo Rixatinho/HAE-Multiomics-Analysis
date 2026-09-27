@@ -40,7 +40,7 @@ Outputs (results/enhancement47_gtex_genomewide/):
   liver_signature_retention.csv        C
   tier0_12gene_v10_recomputed.csv      D
   dme_panel_percentiles.csv            E
-  SuppFig26_gtex_genomewide.pdf/.png   4-panel supplementary figure
+  SuppFig22_gtex_genomewide.pdf/.png   4-panel supplementary figure
   enhancement47_report.md
 
 Run: /Users/rishat/miniforge3/envs/multiomics/bin/python scripts/enhancement47_gtex_genomewide.py
@@ -396,11 +396,11 @@ ax.set_xlim(0, 100)
 ax.set_title("D  Drug-metabolism panel", loc="left",
              fontsize=8.5, fontweight="bold")
 
-fig.suptitle("Supplementary Fig. 26  Population-scale GTEx v10 genome-wide validation "
+fig.suptitle("Supplementary Fig. 22  Population-scale GTEx v10 genome-wide validation "
              "of the distal-normal liver reference", fontsize=9, y=1.04)
 fig.subplots_adjust(left=0.15, right=0.985, top=0.80, bottom=0.18, wspace=0.42)
-fig.savefig(f"{FIGDIR}/SuppFig26_gtex_genomewide.pdf")
-fig.savefig(f"{FIGDIR}/SuppFig26_gtex_genomewide.png", dpi=600)
+fig.savefig(f"{FIGDIR}/SuppFig22_gtex_genomewide.pdf")
+fig.savefig(f"{FIGDIR}/SuppFig22_gtex_genomewide.png", dpi=600)
 plt.close(fig)
 
 # ---------------------------------------------------------------- report

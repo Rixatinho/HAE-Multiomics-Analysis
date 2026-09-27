@@ -134,6 +134,7 @@ Released under the MIT License. See `LICENSE` for details.
 
 ## Release notes
 
+- **v1.2.1 (2026-09-27)**: completed the removal signposted in v1.2.0 — the five Mendelian randomisation scripts under `R/07_biomarker_discovery/` are deleted; `R/09_causal_network_medicine` re-scoped to network medicine and drug repurposing; the stale `Figure_7` / `Figure_8` (MR) and `SuppFig_13` (MR extended) layout blocks removed from `R/utils/figure_layouts.R`; `enhancement47` and `enhancement48` relabelled to their current figure numbers (22 and 28); `enhancement31`–`enhancement34` added (Bayesian MCMC pharmacokinetics, healthy-liver reference, evidence synthesis, real-world consistency).
 - **v1.2.0 (2026-09-26)**: sync with the revised EBioMedicine submission — Mendelian
   randomisation analyses removed throughout; main figures consolidated from 7 to 6
   (former Figure 7 promoted to Figure 6, former Figure 6 moved to Supplementary

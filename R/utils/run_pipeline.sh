@@ -1,3 +1,8 @@
+# NOTE (2026-09-27, release v1.2.1): the SuppFig_NN directory names below are PRE-RENUMBERING
+# labels. All 32 supplementary figures were renumbered by first citation order in the
+# 2026-09 revision; the authoritative numbering is the Supplementary Figure Legends block in
+# the submitted Supplementary Information. Do not treat these folder names as current figure
+# numbers. This script is retained for reproducibility of the underlying panel PDFs only.
 #!/bin/bash
 cd "/Users/rishat/Library/Mobile Documents/com~apple~CloudDocs/个人文档/Word/文献写作/2.肝包虫/20260317-肝包虫多组学"
 LOG="pipeline_run.log"

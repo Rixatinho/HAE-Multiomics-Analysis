@@ -161,43 +161,6 @@ LAYOUTS <- list(
     )
   ),
 
-  # Figure 7: Biomarker Discovery (5 panels: a-e)
-  # 来源: old Fig6 a,b,c,d,f -> new a,b,c,d,e
-  Figure_7 = list(
-    rows = list(
-      list(
-        list(name = "Fig7a_single_feature_roc.pdf",      w = 90, h = 80),
-        list(name = "Fig7b_forest_plot.pdf",             w = 90, h = 80)
-      ),
-      list(
-        list(name = "Fig7c_validation_AUC.pdf",          w = 90, h = 80),
-        list(name = "Fig7d_model_comparison.pdf",        w = 90, h = 80)
-      ),
-      list(
-        list(name = "Fig7e_feature_venn.pdf",            w = NC_MAX_W, h = 80)
-      )
-    )
-  ),
-
-  # Figure 8: Mendelian Randomization and Disease Modules (6 panels: a-f)
-  # 来源: old Fig6 e,g,h,j,k,l -> new a,b,c,d,e,f
-  Figure_8 = list(
-    rows = list(
-      list(
-        list(name = "Fig8a_mr_forest.pdf",               w = 90, h = 80),
-        list(name = "Fig8b_mr_scatter.pdf",              w = 90, h = 80)
-      ),
-      list(
-        list(name = "Fig8c_disease_module_network.pdf",  w = 90, h = 80),
-        list(name = "Fig8d_disease_module_network.pdf",  w = 90, h = 80)
-      ),
-      list(
-        list(name = "Fig8e_deg_heatmap.pdf",             w = 90, h = 80),
-        list(name = "Fig8f_direction_heatmap.pdf",       w = 90, h = 80)
-      )
-    )
-  ),
-
   # ---- SUPPLEMENTARY FIGURES (13张) ----
 
   # Supp Fig 1: Quality Control (10 panels: a-j)
@@ -474,31 +437,6 @@ LAYOUTS <- list(
     )
   ),
 
-  # Supp Fig 13: Mendelian Randomization Extended (9 panels: a-i)
-  # 来源: old Supp11 f,h,q,r,s,t,u,v->a,b,c,d,e,f,g,h + old Fig6 i->i
-  SuppFig_13 = list(
-    rows = list(
-      list(
-        list(name = "Supp13a_upset_degs.pdf",            w = 90, h = 70),
-        list(name = "Supp13b_drug_ranking.pdf",          w = 90, h = 70)
-      ),
-      list(
-        list(name = "Supp13c_mr_funnel.pdf",             w = 90, h = 70),
-        list(name = "Supp13d_mr_loo.pdf",                w = 90, h = 70)
-      ),
-      list(
-        list(name = "Supp13e_evidence_heatmap.pdf",      w = 90, h = 70),
-        list(name = "Supp13f_evidence_heatmap.pdf",      w = 90, h = 70)
-      ),
-      list(
-        list(name = "Supp13g_deg_heatmap.pdf",           w = 90, h = 70),
-        list(name = "Supp13h_forest_plot.pdf",           w = 90, h = 70)
-      ),
-      list(
-        list(name = "Supp13i_pathway_heatmap.pdf",       w = NC_MAX_W, h = 70)
-      )
-    )
-  )
 )
 
 # =============================================================================

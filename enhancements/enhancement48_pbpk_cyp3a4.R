@@ -400,9 +400,9 @@ draw_panels <- function(pdf_or_png) {
   title("d  Sub-therapeutic probability", adj = 0, font.main = 2)
 }
 
-pdf(file.path(FIGD, "SuppFig27_pbpk_cyp3a4.pdf"), width = 9.6, height = 3.4)
+pdf(file.path(FIGD, "SuppFig28_pbpk_cyp3a4.pdf"), width = 9.6, height = 3.4)
 par_def(); draw_panels(); dev.off()
-png(file.path(FIGD, "SuppFig27_pbpk_cyp3a4.png"), width = 9.6, height = 3.4,
+png(file.path(FIGD, "SuppFig28_pbpk_cyp3a4.png"), width = 9.6, height = 3.4,
     units = "in", res = 600)
 par_def(); draw_panels(); dev.off()
 
